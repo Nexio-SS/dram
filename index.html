@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dram — descubra seu próximo whisky</title>
+<meta name="description" content="Escaneie o rótulo, veja as notas de degustação e a nota da comunidade. O jeito simples de descobrir, avaliar e guardar seus whiskies favoritos." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#f6efe1;
+    --paper-2:#efe6d3;
+    --card:#fffdf7;
+    --ink:#2b2015;
+    --ink-soft:#5c4d3b;
+    --muted:#8a7b64;
+    --line:#e3d8c2;
+    --amber:#bf7420;
+    --amber-deep:#9a4e17;
+    --gold:#e0a94f;
+    --green:#3f5e46;
+    --green-soft:#e7ede2;
+    --amber-soft:#f6e6cd;
+    --radius:22px;
+    --shadow:0 1px 2px rgba(60,40,15,.05), 0 18px 40px -22px rgba(90,55,15,.35);
+    --shadow-lg:0 2px 4px rgba(60,40,15,.06), 0 40px 80px -34px rgba(90,55,15,.45);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Hanken Grotesk",system-ui,sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  /* subtle paper grain */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.5;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+    mix-blend-mode:multiply;
+  }
+  ::selection{background:var(--amber);color:#fff}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 28px;position:relative;z-index:2}
+  .serif{font-family:"Fraunces",Georgia,serif}
+  .mono{font-family:"IBM Plex Mono",monospace}
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:sticky;top:0;z-index:50;
+    backdrop-filter:blur(10px);
+    background:rgba(246,239,225,.78);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-in{display:flex;align-items:center;justify-content:space-between;height:70px}
+  .brand{display:flex;align-items:center;gap:11px;font-family:"Fraunces";font-weight:600;font-size:24px;letter-spacing:-.02em}
+  .mark{
+    width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;
+    background:radial-gradient(circle at 32% 28%,var(--gold),var(--amber) 55%,var(--amber-deep));
+    box-shadow:inset 0 2px 4px rgba(255,255,255,.4), 0 4px 12px -4px rgba(154,78,23,.6);
+  }
+  .mark span{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.55);filter:blur(.3px)}
+  .nav-links{display:flex;gap:34px;align-items:center}
+  .nav-links a{font-size:15px;color:var(--ink-soft);font-weight:500;transition:color .2s}
+  .nav-links a:hover{color:var(--amber-deep)}
+  .btn{
+    font-family:"Hanken Grotesk";font-weight:600;font-size:15px;border:none;cursor:pointer;
+    padding:11px 22px;border-radius:100px;transition:transform .15s ease, box-shadow .2s ease, background .2s;
+  }
+  .btn-primary{background:var(--ink);color:var(--paper)}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 24px -10px rgba(43,32,21,.55)}
+  .btn-amber{background:linear-gradient(180deg,var(--gold),var(--amber));color:#fff;box-shadow:0 10px 22px -10px rgba(191,116,32,.8)}
+  .btn-amber:hover{transform:translateY(-2px);box-shadow:0 16px 30px -10px rgba(191,116,32,.9)}
+  .btn-ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--amber);color:var(--amber-deep)}
+  @media(max-width:760px){.nav-links{display:none}}
+
+  /* ---------- HERO ---------- */
+  header{position:relative;padding:78px 0 40px;overflow:hidden}
+  .hero-glow{
+    position:absolute;top:-160px;right:-120px;width:620px;height:620px;border-radius:50%;z-index:0;
+    background:radial-gradient(circle,rgba(224,169,79,.55),rgba(191,116,32,.12) 45%,transparent 70%);
+    filter:blur(20px);pointer-events:none;
+  }
+  .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center;position:relative;z-index:2}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:600;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--amber-deep);background:var(--amber-soft);
+    padding:7px 15px;border-radius:100px;margin-bottom:24px;
+  }
+  .eyebrow b{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block}
+  h1{
+    font-family:"Fraunces";font-weight:500;font-size:clamp(44px,6vw,74px);line-height:1.02;
+    letter-spacing:-.025em;color:var(--ink);margin-bottom:22px;
+  }
+  h1 em{font-style:italic;color:var(--amber-deep);font-weight:500}
+  .lede{font-size:19px;color:var(--ink-soft);max-width:480px;margin-bottom:34px}
+  .cta-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .cta-row .btn{padding:15px 28px;font-size:16px}
+  .trust{margin-top:30px;display:flex;align-items:center;gap:14px}
+  .avatars{display:flex}
+  .avatars i{
+    width:34px;height:34px;border-radius:50%;border:2.5px solid var(--paper);margin-left:-10px;
+    background-size:cover;box-shadow:0 2px 5px rgba(0,0,0,.12);
+  }
+  .avatars i:first-child{margin-left:0}
+  .trust p{font-size:14px;color:var(--muted)}
+  .trust b{color:var(--ink);font-weight:600}
+  .stars{color:var(--gold);letter-spacing:2px}
+
+  /* ---------- HERO CARD (tasting) ---------- */
+  .glass-wrap{position:relative;perspective:1400px}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow-lg);overflow:hidden;
+  }
+  .taste-card{transform:rotate(1.6deg);transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+  .glass-wrap:hover .taste-card{transform:rotate(0deg) translateY(-4px)}
+  .tc-top{display:flex;gap:16px;padding:22px 22px 18px;border-bottom:1px solid var(--line);align-items:center}
+  .bottle{
+    width:56px;height:78px;flex:0 0 auto;border-radius:8px 8px 10px 10px;position:relative;
+    background:linear-gradient(160deg,#3f5e46,#2e4534);box-shadow:inset 0 2px 6px rgba(255,255,255,.15);
+  }
+  .bottle::before{content:"";position:absolute;top:-11px;left:50%;transform:translateX(-50%);width:16px;height:14px;background:#2e4534;border-radius:3px}
+  .bottle::after{content:"";position:absolute;top:26px;left:6px;right:6px;height:30px;border-radius:4px;background:var(--paper);opacity:.92}
+  .tc-title h3{font-family:"Fraunces";font-weight:600;font-size:22px;line-height:1.15;letter-spacing:-.01em}
+  .tc-title .meta{font-size:13.5px;color:var(--muted);margin-top:3px}
+  .region{display:inline-flex;align-items:center;gap:6px;margin-top:9px;font-size:12.5px;color:var(--green);background:var(--green-soft);padding:4px 10px;border-radius:100px;font-weight:600}
+  .score{margin-left:auto;text-align:center;flex:0 0 auto}
+  .score .num{font-family:"Fraunces";font-weight:600;font-size:34px;color:var(--amber-deep);line-height:1}
+  .score .of{font-size:12px;color:var(--muted)}
+  .score .st{color:var(--gold);font-size:12px;letter-spacing:1px;margin-top:3px}
+
+  .tc-body{padding:20px 22px}
+  .tc-body .lbl{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:13px}
+  .flavor{margin-bottom:12px}
+  .flavor .fr{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:5px;font-weight:500}
+  .flavor .fr span:last-child{color:var(--muted);font-family:"IBM Plex Mono";font-size:12px}
+  .bar{height:7px;background:var(--paper-2);border-radius:100px;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:100px;background:linear-gradient(90deg,var(--gold),var(--amber));transform-origin:left;animation:grow 1.1s cubic-bezier(.2,.8,.2,1) forwards;transform:scaleX(0)}
+  @keyframes grow{to{transform:scaleX(1)}}
+  .notes{margin-top:18px;padding-top:16px;border-top:1px dashed var(--line);font-family:"Fraunces";font-style:italic;font-size:15px;color:var(--ink-soft);line-height:1.5}
+  .notes b{color:var(--amber-deep);font-style:normal}
+  .float-chip{
+    position:absolute;bottom:-18px;left:-22px;background:var(--card);border:1px solid var(--line);
+    border-radius:16px;padding:12px 16px;box-shadow:var(--shadow);display:flex;align-items:center;gap:11px;z-index:3;
+    animation:bob 4s ease-in-out infinite;
+  }
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+  .float-chip .ic{width:36px;height:36px;border-radius:10px;background:var(--amber-soft);display:grid;place-items:center;font-size:18px}
+  .float-chip small{display:block;font-size:11.5px;color:var(--muted)}
+  .float-chip strong{font-size:14px;font-family:"Fraunces";font-weight:600}
+  @media(max-width:900px){
+    .hero{grid-template-columns:1fr;gap:56px}
+    .glass-wrap{max-width:420px;margin:0 auto}
+  }
+
+  /* ---------- MARQUEE ---------- */
+  .marquee{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--paper-2);overflow:hidden;padding:15px 0;margin-top:44px}
+  .mq-track{display:flex;gap:52px;white-space:nowrap;animation:scroll 26s linear infinite;width:max-content}
+  .mq-track span{font-family:"Fraunces";font-style:italic;font-size:19px;color:var(--ink-soft);display:flex;align-items:center;gap:52px}
+  .mq-track span::after{content:"◦";color:var(--amber);font-style:normal}
+  @keyframes scroll{to{transform:translateX(-50%)}}
+
+  /* ---------- SECTIONS ---------- */
+  section{padding:96px 0;position:relative}
+  .sec-head{max-width:600px;margin-bottom:56px}
+  .kicker{font-family:"IBM Plex Mono";font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin-bottom:16px}
+  h2{font-family:"Fraunces";font-weight:500;font-size:clamp(32px,4.4vw,48px);letter-spacing:-.02em;line-height:1.06;margin-bottom:18px}
+  h2 em{font-style:italic;color:var(--amber-deep)}
+  .sec-head p{font-size:18px;color:var(--ink-soft)}
+
+  /* steps */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:32px 28px;box-shadow:var(--shadow);transition:transform .25s ease, box-shadow .25s ease}
+  .step:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg)}
+  .step .n{font-family:"IBM Plex Mono";font-size:13px;color:var(--amber);margin-bottom:20px}
+  .step .icon{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-size:26px;margin-bottom:20px;background:var(--amber-soft)}
+  .step:nth-child(2) .icon{background:var(--green-soft)}
+  .step h3{font-family:"Fraunces";font-weight:600;font-size:22px;margin-bottom:10px;letter-spacing:-.01em}
+  .step p{font-size:15.5px;color:var(--ink-soft)}
+  @media(max-width:820px){.steps{grid-template-columns:1fr}}
+
+  /* palate / feature split */
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+  .radar-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:36px;box-shadow:var(--shadow-lg);text-align:center}
+  .radar-card h4{font-family:"Fraunces";font-weight:600;font-size:20px;margin-bottom:6px}
+  .radar-card .sub{font-size:14px;color:var(--muted);margin-bottom:26px}
+  .tags{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:26px}
+  .tag{font-size:14px;font-weight:500;padding:9px 16px;border-radius:100px;border:1.5px solid var(--line);color:var(--ink-soft);transition:all .2s;cursor:default}
+  .tag.on{background:var(--amber-soft);border-color:transparent;color:var(--amber-deep);font-weight:600}
+  .tag.on.g{background:var(--green-soft);color:var(--green)}
+  .feature-list{list-style:none;margin-top:30px;display:flex;flex-direction:column;gap:20px}
+  .feature-list li{display:flex;gap:15px;align-items:flex-start}
+  .feature-list .ck{width:28px;height:28px;flex:0 0 auto;border-radius:8px;background:var(--green);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:700;margin-top:2px}
+  .feature-list h5{font-size:17px;font-weight:600;margin-bottom:2px}
+  .feature-list p{font-size:15px;color:var(--ink-soft)}
+  @media(max-width:820px){.split{grid-template-columns:1fr;gap:44px}}
+
+  /* radar svg */
+  .radar{width:230px;height:230px;margin:0 auto}
+  .radar polygon.grid{fill:none;stroke:var(--line);stroke-width:1}
+  .radar polygon.data{fill:rgba(191,116,32,.22);stroke:var(--amber);stroke-width:2;animation:pop 1s ease forwards}
+  .radar line{stroke:var(--line);stroke-width:1}
+  .radar text{font-family:"IBM Plex Mono";font-size:9px;fill:var(--muted)}
+  @keyframes pop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+
+  /* stats */
+  .stats{background:var(--ink);border-radius:32px;padding:56px 40px;color:var(--paper);position:relative;overflow:hidden}
+  .stats::after{content:"";position:absolute;top:-80px;right:-60px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(224,169,79,.4),transparent 68%)}
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:34px;position:relative;z-index:2}
+  .stat .num{font-family:"Fraunces";font-weight:600;font-size:clamp(34px,4vw,52px);color:var(--gold);line-height:1}
+  .stat .lbl{font-size:14.5px;color:rgba(246,239,225,.7);margin-top:8px}
+  @media(max-width:720px){.stats-grid{grid-template-columns:1fr 1fr;gap:34px 20px}}
+
+  /* reviews */
+  .reviews{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .review{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow)}
+  .review .rt{color:var(--gold);letter-spacing:2px;margin-bottom:14px}
+  .review p{font-family:"Fraunces";font-style:italic;font-size:16.5px;color:var(--ink-soft);line-height:1.5;margin-bottom:20px}
+  .review .who{display:flex;align-items:center;gap:12px}
+  .review .who i{width:40px;height:40px;border-radius:50%;background-size:cover;background:linear-gradient(135deg,var(--gold),var(--amber))}
+  .review .who b{font-size:15px;font-weight:600;display:block}
+  .review .who small{font-size:13px;color:var(--muted)}
+  @media(max-width:820px){.reviews{grid-template-columns:1fr}}
+
+  /* waitlist CTA */
+  .final{text-align:center;background:
+     radial-gradient(circle at 50% -10%,var(--amber-soft),transparent 55%),var(--card);
+     border:1px solid var(--line);border-radius:32px;padding:70px 32px;box-shadow:var(--shadow-lg)}
+  .final h2{max-width:640px;margin:0 auto 16px}
+  .final p{font-size:18px;color:var(--ink-soft);max-width:480px;margin:0 auto 34px}
+  .form{display:flex;gap:10px;max-width:440px;margin:0 auto;background:var(--paper);padding:8px;border-radius:100px;border:1px solid var(--line)}
+  .form input{flex:1;border:none;background:transparent;padding:0 18px;font-family:"Hanken Grotesk";font-size:16px;color:var(--ink);outline:none}
+  .form input::placeholder{color:var(--muted)}
+  .form .btn{white-space:nowrap}
+  .final small{display:block;margin-top:16px;font-size:13.5px;color:var(--muted)}
+  @media(max-width:520px){.form{flex-direction:column;border-radius:22px;padding:12px}.form input{padding:12px 16px;text-align:center}.form .btn{border-radius:14px;padding:14px}}
+
+  /* footer */
+  footer{padding:56px 0 40px;border-top:1px solid var(--line);margin-top:96px}
+  .foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px}
+  .foot .brand{font-size:20px}
+  .foot-links{display:flex;gap:28px;font-size:14.5px;color:var(--muted)}
+  .foot-links a:hover{color:var(--amber-deep)}
+  .copy{width:100%;font-size:13px;color:var(--muted);margin-top:28px;padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+  /* reveal on load */
+  .rev{opacity:0;transform:translateY(22px);animation:rev .8s cubic-bezier(.2,.8,.2,1) forwards}
+  @keyframes rev{to{opacity:1;transform:none}}
+  .d1{animation-delay:.05s}.d2{animation-delay:.15s}.d3{animation-delay:.25s}.d4{animation-delay:.35s}.d5{animation-delay:.45s}
+  .io{opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+  .io.in{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-in">
+    <a class="brand" href="#"><span class="mark"><span></span></span>Dram</a>
+    <div class="nav-links">
+      <a href="#como">Como funciona</a>
+      <a href="#paladar">Seu paladar</a>
+      <a href="#comunidade">Comunidade</a>
+      <a href="#lista">Lista de espera</a>
+    </div>
+    <button class="btn btn-amber" onclick="document.getElementById('email').focus()">Começar grátis</button>
+  </div>
+</nav>
+
+<header>
+  <div class="hero-glow"></div>
+  <div class="wrap hero">
+    <div class="hero-copy">
+      <span class="eyebrow rev d1"><b></b> O Vivino do whisky</span>
+      <h1 class="rev d2">Descubra seu próximo <em>gole favorito</em>.</h1>
+      <p class="lede rev d3">Aponte a câmera pro rótulo e pronto: notas de degustação, nota da comunidade e onde comprar. Sem ser especialista — só curtindo bem.</p>
+      <div class="cta-row rev d4">
+        <button class="btn btn-primary" onclick="document.getElementById('email').focus()">Escanear meu primeiro whisky</button>
+        <a href="#como" class="btn btn-ghost">Ver como funciona</a>
+      </div>
+      <div class="trust rev d5">
+        <div class="avatars">
+          <i style="background:linear-gradient(135deg,#e0a94f,#bf7420)"></i>
+          <i style="background:linear-gradient(135deg,#3f5e46,#6c8f74)"></i>
+          <i style="background:linear-gradient(135deg,#9a4e17,#e0a94f)"></i>
+          <i style="background:linear-gradient(135deg,#5c4d3b,#8a7b64)"></i>
+        </div>
+        <p><span class="stars">★★★★★</span><br><b>12.400+</b> degustadores já entraram</p>
+      </div>
+    </div>
+
+    <div class="glass-wrap rev d3">
+      <div class="card taste-card">
+        <div class="tc-top">
+          <div class="bottle"></div>
+          <div class="tc-title">
+            <h3>Lagavulin 16</h3>
+            <div class="meta">Single Malt · 43% · 16 anos</div>
+            <span class="region">◉ Islay, Escócia</span>
+          </div>
+          <div class="score">
+            <div class="num">4.6</div>
+            <div class="of">/ 5.0</div>
+            <div class="st">★★★★★</div>
+          </div>
+        </div>
+        <div class="tc-body">
+          <div class="lbl">Perfil de sabor</div>
+          <div class="flavor">
+            <div class="fr"><span>Turfa &amp; fumaça</span><span>alto</span></div>
+            <div class="bar"><i style="width:92%;animation-delay:.3s"></i></div>
+          </div>
+          <div class="flavor">
+            <div class="fr"><span>Mel &amp; baunilha</span><span>médio</span></div>
+            <div class="bar"><i style="width:58%;animation-delay:.45s"></i></div>
+          </div>
+          <div class="flavor">
+            <div class="fr"><span>Sal marinho</span><span>médio-alto</span></div>
+            <div class="bar"><i style="width:72%;animation-delay:.6s"></i></div>
+          </div>
+          <div class="flavor">
+            <div class="fr"><span>Carvalho &amp; especiarias</span><span>médio</span></div>
+            <div class="bar"><i style="width:64%;animation-delay:.75s"></i></div>
+          </div>
+          <p class="notes"><b>Notas:</b> fogueira à beira-mar, iodo, um toque doce de xerez e final longo e defumado.</p>
+        </div>
+      </div>
+      <div class="float-chip">
+        <div class="ic">📷</div>
+        <div><small>Rótulo reconhecido em</small><strong>1,2 segundos</strong></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="marquee">
+  <div class="mq-track">
+    <span>Single Malt</span><span>Bourbon</span><span>Islay defumado</span><span>Speyside</span><span>Japonês</span><span>Centeio</span><span>Turfado</span><span>Sherry cask</span>
+    <span>Single Malt</span><span>Bourbon</span><span>Islay defumado</span><span>Speyside</span><span>Japonês</span><span>Centeio</span><span>Turfado</span><span>Sherry cask</span>
+  </div>
+</div>
+
+<!-- COMO FUNCIONA -->
+<section id="como">
+  <div class="wrap">
+    <div class="sec-head io">
+      <div class="kicker">// simples assim</div>
+      <h2>Do rótulo à <em>degustação</em> em três toques.</h2>
+      <p>Feito pra quem gosta de whisky sem querer decorar termos técnicos. A gente traduz.</p>
+    </div>
+    <div class="steps">
+      <div class="step io">
+        <div class="n">01</div>
+        <div class="icon">📸</div>
+        <h3>Escaneie o rótulo</h3>
+        <p>Aponte a câmera pra garrafa ou pro cardápio do bar. Reconhecemos milhares de whiskies na hora.</p>
+      </div>
+      <div class="step io">
+        <div class="n">02</div>
+        <div class="icon">🥃</div>
+        <h3>Veja as notas</h3>
+        <p>Perfil de sabor visual, nota da comunidade e uma descrição em português que qualquer um entende.</p>
+      </div>
+      <div class="step io">
+        <div class="n">03</div>
+        <div class="icon">📖</div>
+        <h3>Guarde na sua adega</h3>
+        <p>Salve o que provou, dê sua nota e receba recomendações que combinam com o seu paladar.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEU PALADAR -->
+<section id="paladar" style="background:var(--paper-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+  <div class="wrap split">
+    <div class="io">
+      <div class="kicker">// recomendação por sabor</div>
+      <h2>Um paladar tão único <em>quanto você.</em></h2>
+      <p style="font-size:18px;color:var(--ink-soft)">Quanto mais você avalia, mais o Dram aprende o que você curte — do docinho de bourbon ao defumado pesado de Islay.</p>
+      <ul class="feature-list">
+        <li><span class="ck">✓</span><div><h5>Mapa de sabor pessoal</h5><p>Veja num relance se você prefere frutado, defumado, amadeirado ou apimentado.</p></div></li>
+        <li><span class="ck">✓</span><div><h5>Recomendações certeiras</h5><p>Sugestões pra cada faixa de preço, do rótulo do dia a dia ao presente especial.</p></div></li>
+        <li><span class="ck">✓</span><div><h5>Combina com o momento</h5><p>Um pra relaxar, um pra impressionar, um pra dividir com amigos.</p></div></li>
+      </ul>
+    </div>
+    <div class="radar-card io">
+      <h4>Seu perfil de sabor</h4>
+      <div class="sub">baseado em 34 whiskies avaliados</div>
+      <svg class="radar" viewBox="0 0 200 200">
+        <polygon class="grid" points="100,20 168,60 168,140 100,180 32,140 32,60"/>
+        <polygon class="grid" points="100,50 143,75 143,125 100,150 57,125 57,75"/>
+        <line x1="100" y1="100" x2="100" y2="20"/><line x1="100" y1="100" x2="168" y2="60"/>
+        <line x1="100" y1="100" x2="168" y2="140"/><line x1="100" y1="100" x2="100" y2="180"/>
+        <line x1="100" y1="100" x2="32" y2="140"/><line x1="100" y1="100" x2="32" y2="60"/>
+        <polygon class="data" points="100,32 158,66 150,132 100,164 48,128 46,68"/>
+        <text x="94" y="14">Defumado</text><text x="172" y="60">Frutado</text>
+        <text x="172" y="146">Doce</text><text x="86" y="194">Apimentado</text>
+        <text x="0" y="146">Salgado</text><text x="4" y="60">Amadeirado</text>
+      </svg>
+      <div class="tags">
+        <span class="tag on">Turfado</span>
+        <span class="tag on g">Sherry</span>
+        <span class="tag">Frutado</span>
+        <span class="tag on">Marítimo</span>
+        <span class="tag">Baunilha</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section>
+  <div class="wrap">
+    <div class="stats io">
+      <div class="stats-grid">
+        <div class="stat"><div class="num" data-to="28000">0</div><div class="lbl">whiskies no catálogo</div></div>
+        <div class="stat"><div class="num" data-to="12400">0</div><div class="lbl">degustadores ativos</div></div>
+        <div class="stat"><div class="num" data-to="190000">0</div><div class="lbl">avaliações reais</div></div>
+        <div class="stat"><div class="num" data-suffix="s" data-to="1">0</div><div class="lbl">pra reconhecer um rótulo</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMUNIDADE -->
+<section id="comunidade" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head io">
+      <div class="kicker">// da comunidade</div>
+      <h2>Provado e aprovado por <em>gente como você.</em></h2>
+      <p>Do iniciante curioso ao colecionador — todo mundo cabe no balcão.</p>
+    </div>
+    <div class="reviews">
+      <div class="review io">
+        <div class="rt">★★★★★</div>
+        <p>“Eu não sabia nada de whisky. Hoje escolho garrafa sozinho no mercado sem medo de errar.”</p>
+        <div class="who"><i style="background:linear-gradient(135deg,#e0a94f,#bf7420)"></i><div><b>Rafael M.</b><small>Iniciante · Santos</small></div></div>
+      </div>
+      <div class="review io">
+        <div class="rt">★★★★★</div>
+        <p>“O mapa de sabor é viciante. Descobri que amo turfado e agora minha adega tem tema.”</p>
+        <div class="who"><i style="background:linear-gradient(135deg,#3f5e46,#6c8f74)"></i><div><b>Juliana T.</b><small>Entusiasta · São Paulo</small></div></div>
+      </div>
+      <div class="review io">
+        <div class="rt">★★★★★</div>
+        <p>“Escaneei o cardápio de um bar em Edimburgo e escolhi pela nota da comunidade. Certeiro.”</p>
+        <div class="who"><i style="background:linear-gradient(135deg,#9a4e17,#e0a94f)"></i><div><b>Diego P.</b><small>Colecionador · Guarujá</small></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WAITLIST -->
+<section id="lista" style="padding-top:0">
+  <div class="wrap">
+    <div class="final io">
+      <div class="kicker" style="justify-content:center">// acesso antecipado</div>
+      <h2>Entre pra <em>primeira rodada.</em></h2>
+      <p>Estamos abrindo as portas aos poucos. Deixe seu e-mail e prove antes de todo mundo.</p>
+      <form class="form" onsubmit="joinWaitlist(event)">
+        <input id="email" type="email" placeholder="seu@email.com" required aria-label="Seu e-mail" />
+        <button class="btn btn-amber" type="submit">Quero entrar 🥃</button>
+      </form>
+      <small id="formMsg">Sem spam. Só o convite quando sua vez chegar.</small>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <a class="brand" href="#"><span class="mark"><span></span></span>Dram</a>
+      <div class="foot-links">
+        <a href="#como">Como funciona</a>
+        <a href="#paladar">Seu paladar</a>
+        <a href="#comunidade">Comunidade</a>
+        <a href="#lista">Lista de espera</a>
+      </div>
+    </div>
+    <div class="copy">
+      <span>© 2026 Dram. Aprecie com moderação. Venda proibida para menores de 18 anos.</span>
+      <span>Feito com 🥃 no Brasil</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // reveal on scroll
+  const io = new IntersectionObserver((es)=>{
+    es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  },{threshold:.15});
+  document.querySelectorAll('.io').forEach(el=>io.observe(el));
+
+  // count up stats
+  function countUp(el){
+    const to=+el.dataset.to, suf=el.dataset.suffix||'';
+    const dur=1400, t0=performance.now();
+    function fmt(n){ return n>=1000 ? Math.round(n).toLocaleString('pt-BR') : (to===1? n.toFixed(1):Math.round(n)); }
+    function tick(t){
+      const p=Math.min((t-t0)/dur,1), e=1-Math.pow(1-p,3);
+      el.textContent=fmt(to*e)+suf;
+      if(p<1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  const statsIO=new IntersectionObserver((es)=>{
+    es.forEach(e=>{ if(e.isIntersecting){ e.target.querySelectorAll('[data-to]').forEach(countUp); statsIO.unobserve(e.target);} });
+  },{threshold:.4});
+  document.querySelectorAll('.stats').forEach(el=>statsIO.observe(el));
+
+  // waitlist
+  function joinWaitlist(ev){
+    ev.preventDefault();
+    const msg=document.getElementById('formMsg');
+    document.getElementById('email').value='';
+    msg.textContent='🎉 Você está na lista! Já já mandamos seu convite.';
+    msg.style.color='var(--green)';
+  }
+</script>
+</body>
+</html>

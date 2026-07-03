@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Dram — app</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#f6efe1; --paper-2:#efe6d3; --card:#fffdf7;
+    --ink:#2b2015; --ink-soft:#5c4d3b; --muted:#8a7b64; --line:#e6dcc7;
+    --amber:#bf7420; --amber-deep:#9a4e17; --gold:#e0a94f;
+    --green:#3f5e46; --green-soft:#e7ede2; --amber-soft:#f7e7ce;
+    --shadow:0 1px 2px rgba(60,40,15,.05),0 14px 30px -18px rgba(90,55,15,.35);
+    --shadow-lg:0 2px 4px rgba(60,40,15,.06),0 34px 60px -30px rgba(90,55,15,.45);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:"Hanken Grotesk",system-ui,sans-serif;background:#e8ddc7;color:var(--ink);
+    -webkit-font-smoothing:antialiased;display:flex;justify-content:center;align-items:center;min-height:100vh}
+  .serif{font-family:"Fraunces",serif}.mono{font-family:"IBM Plex Mono",monospace}
+  ::selection{background:var(--amber);color:#fff}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+
+  /* phone shell */
+  .phone{width:100%;max-width:440px;min-height:100vh;height:100vh;max-height:100vh;background:var(--paper);position:relative;
+    box-shadow:0 0 80px -20px rgba(90,55,15,.4);overflow:hidden;display:flex;flex-direction:column}
+  @supports(height:100dvh){.phone{min-height:100dvh;height:100dvh;max-height:100dvh}}
+  @media(min-width:480px){.phone{min-height:0;height:min(880px,calc(100vh - 40px));max-height:none;margin:20px 0;border-radius:38px;border:1px solid var(--line)}}
+
+  /* grain */
+  .phone::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:60;opacity:.4;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.3'/%3E%3C/svg%3E");mix-blend-mode:multiply}
+
+  /* header */
+  .topbar{position:sticky;top:0;z-index:40;background:rgba(246,239,225,.85);backdrop-filter:blur(12px);
+    padding:16px 20px 12px;border-bottom:1px solid var(--line)}
+  .tb-row{display:flex;align-items:center;justify-content:space-between}
+  .brand{display:flex;align-items:center;gap:9px;font-family:"Fraunces";font-weight:600;font-size:22px;letter-spacing:-.02em}
+  .mark{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+    background:radial-gradient(circle at 32% 28%,var(--gold),var(--amber) 55%,var(--amber-deep));
+    box-shadow:inset 0 2px 3px rgba(255,255,255,.4),0 3px 8px -3px rgba(154,78,23,.6)}
+  .mark span{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.55)}
+  .greet{font-size:13px;color:var(--muted)}
+  .greet b{color:var(--ink);font-family:"Fraunces";font-weight:600;font-size:16px;display:block}
+  .avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--amber));
+    display:grid;place-items:center;color:#fff;font-weight:700;font-size:15px;box-shadow:var(--shadow)}
+
+  /* scroll area */
+  .screen{flex:1;overflow-y:auto;padding-bottom:96px;position:relative;z-index:5}
+  .screen::-webkit-scrollbar{width:0}
+  .pad{padding:20px}
+  .page{display:none;animation:fade .35s ease}
+  .page.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  /* search */
+  .search{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);
+    border-radius:100px;padding:12px 18px;margin:16px 0;box-shadow:var(--shadow)}
+  .search input{flex:1;border:none;background:none;outline:none;font-family:inherit;font-size:15px;color:var(--ink)}
+  .search input::placeholder{color:var(--muted)}
+  .chips{display:flex;gap:9px;overflow-x:auto;padding-bottom:4px;margin-bottom:8px}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{white-space:nowrap;font-size:13.5px;font-weight:600;padding:8px 15px;border-radius:100px;
+    border:1.5px solid var(--line);color:var(--ink-soft);background:var(--card);transition:.2s;flex:0 0 auto}
+  .chip.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+  .section-t{font-family:"Fraunces";font-weight:600;font-size:20px;letter-spacing:-.01em;margin:22px 0 4px}
+  .section-s{font-size:13.5px;color:var(--muted);margin-bottom:14px}
+
+  /* whisky card (list) */
+  .w-card{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);
+    border-radius:20px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow);transition:transform .15s ease;cursor:pointer}
+  .w-card:active{transform:scale(.98)}
+  .bottle{width:44px;height:66px;flex:0 0 auto;border-radius:6px 6px 8px 8px;position:relative;
+    box-shadow:inset 0 2px 5px rgba(255,255,255,.2)}
+  .bottle::before{content:"";position:absolute;top:-9px;left:50%;transform:translateX(-50%);
+    width:13px;height:12px;background:inherit;border-radius:2px;filter:brightness(.8)}
+  .bottle::after{content:"";position:absolute;top:22px;left:5px;right:5px;height:26px;border-radius:3px;background:var(--paper);opacity:.9}
+  .bottle-photo{display:grid;place-items:center;overflow:hidden;border:1px solid rgba(154,78,23,.16);
+    background:linear-gradient(180deg,rgba(255,253,247,.94),rgba(239,230,211,.82)),var(--bottle-bg,var(--amber-soft)) !important}
+  .bottle-photo::before,.bottle-photo::after{display:none}
+  .bottle-photo img{position:absolute;inset:3px;width:calc(100% - 6px);height:calc(100% - 6px);object-fit:contain;
+    display:block;filter:drop-shadow(0 7px 9px rgba(60,40,15,.22));transform:scale(1.08);transform-origin:center bottom}
+  .w-info{flex:1;min-width:0}
+  .w-info h4{font-family:"Fraunces";font-weight:600;font-size:16.5px;line-height:1.2;letter-spacing:-.01em}
+  .w-info .m{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .w-info .rg{display:inline-block;margin-top:7px;font-size:11.5px;color:var(--green);background:var(--green-soft);
+    padding:3px 9px;border-radius:100px;font-weight:600}
+  .w-score{text-align:center;flex:0 0 auto}
+  .w-score .n{font-family:"Fraunces";font-weight:600;font-size:22px;color:var(--amber-deep);line-height:1}
+  .w-score .st{color:var(--gold);font-size:10px;letter-spacing:.5px;margin-top:2px}
+  .w-score .v{font-size:10px;color:var(--muted);margin-top:2px}
+
+  /* hero featured */
+  .feat{border-radius:24px;padding:22px;color:#fff;position:relative;overflow:hidden;margin-bottom:6px;
+    background:linear-gradient(135deg,#2e4534,#3f5e46);box-shadow:var(--shadow-lg)}
+  .feat::after{content:"";position:absolute;top:-40px;right:-30px;width:180px;height:180px;border-radius:50%;
+    background:radial-gradient(circle,rgba(224,169,79,.5),transparent 68%)}
+  .feat::before{content:"";position:absolute;right:32px;bottom:-8px;width:92px;height:154px;
+    background:url("assets/bottles/lagavulin16-cutout.webp") center bottom/contain no-repeat;opacity:.72;filter:saturate(.9) contrast(1.05) drop-shadow(0 18px 20px rgba(0,0,0,.3));
+    mix-blend-mode:normal;pointer-events:none}
+  .feat .tag{font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);position:relative;z-index:2}
+  .feat h3{font-family:"Fraunces";font-weight:600;font-size:26px;margin:8px 0 4px;position:relative;z-index:2}
+  .feat p{font-size:13.5px;color:rgba(255,255,255,.8);position:relative;z-index:2;max-width:80%}
+  .feat .go{margin-top:16px;display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.16);
+    padding:9px 16px;border-radius:100px;font-size:13.5px;font-weight:600;position:relative;z-index:2;backdrop-filter:blur(4px)}
+
+  /* DETAIL screen */
+  .detail{position:absolute;inset:0;background:var(--paper);z-index:50;overflow-y:auto;transform:translateX(100%);
+    transition:transform .4s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column}
+  .detail.open{transform:none}
+  .detail::-webkit-scrollbar{display:none}
+  .d-hero{padding:22px 20px 18px;background:linear-gradient(180deg,var(--amber-soft),var(--paper));position:relative}
+  .back{width:38px;height:38px;border-radius:50%;background:var(--card);border:1px solid var(--line);
+    display:grid;place-items:center;font-size:18px;box-shadow:var(--shadow)}
+  .d-main{display:flex;gap:16px;align-items:flex-end;margin-top:14px}
+  .d-bottle{width:62px;height:94px;flex:0 0 auto;border-radius:8px 8px 12px 12px;position:relative;box-shadow:0 12px 24px -10px rgba(90,55,15,.5),inset 0 2px 6px rgba(255,255,255,.25)}
+  .d-bottle::before{content:"";position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:18px;height:14px;background:inherit;border-radius:3px;filter:brightness(.8)}
+  .d-bottle::after{content:"";position:absolute;top:32px;left:7px;right:7px;height:38px;border-radius:5px;background:var(--paper);opacity:.92}
+  .d-bottle.bottle-photo img{inset:4px;width:calc(100% - 8px);height:calc(100% - 8px)}
+  .d-main h2{font-family:"Fraunces";font-weight:600;font-size:23px;line-height:1.1;letter-spacing:-.02em}
+  .d-main .dm{font-size:13px;color:var(--ink-soft);margin-top:4px}
+  .d-main .rg{display:inline-block;margin-top:8px;font-size:12px;color:var(--green);background:var(--green-soft);padding:4px 11px;border-radius:100px;font-weight:600}
+  .d-stats{display:flex;gap:9px;margin-top:16px}
+  .d-stat{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center;box-shadow:var(--shadow)}
+  .d-stat .n{font-family:"Fraunces";font-weight:600;font-size:20px;color:var(--amber-deep);line-height:1}
+  .d-stat .l{font-size:10.5px;color:var(--muted);margin-top:3px}
+  .d-body{padding:16px 20px;flex:1}
+  .lbl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:10px}
+  .flavor{margin-bottom:9px}
+  .flavor .fr{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:4px;font-weight:600}
+  .flavor .fr span:last-child{color:var(--muted);font-family:"IBM Plex Mono";font-size:11px;font-weight:400}
+  .bar{height:6px;background:var(--paper-2);border-radius:100px;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:100px;background:linear-gradient(90deg,var(--gold),var(--amber));transform-origin:left;transform:scaleX(0);transition:transform .9s cubic-bezier(.2,.8,.2,1)}
+  .notes-box{margin-top:16px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:var(--shadow)}
+  .notes-box p{font-family:"Fraunces";font-style:italic;font-size:15px;color:var(--ink-soft);line-height:1.45}
+  .pair{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:20px 16px}
+  .pitem{display:flex;flex-direction:column;gap:8px;min-width:0}
+  .pic{color:var(--amber-deep)}
+  .pic svg{width:26px;height:26px;display:block}
+  .pitem b{font-size:14px;font-weight:600;color:var(--ink);line-height:1.15}
+  .pitem small{font-size:12px;color:var(--muted);font-weight:500}
+
+  /* feed (amigos) */
+  .feed{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px;margin-bottom:12px;box-shadow:var(--shadow)}
+  .feed-top{display:flex;align-items:center;gap:11px;margin-bottom:11px}
+  .feed-av{width:40px;height:40px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;color:#fff;font-weight:700;font-size:15px}
+  .feed-who{flex:1;min-width:0;font-size:14px;line-height:1.35}
+  .feed-who b{font-weight:700}
+  .feed-who .act{color:var(--ink-soft)}
+  .feed-who .tm{font-size:12px;color:var(--muted);margin-top:1px}
+  .feed-rt{color:var(--gold);font-size:12px;letter-spacing:.5px;flex:0 0 auto}
+  .feed-txt{font-family:"Fraunces";font-style:italic;font-size:14.5px;color:var(--ink-soft);line-height:1.45;margin-bottom:11px}
+  .feed-w{display:flex;align-items:center;gap:11px;background:var(--paper);border:1px solid var(--line);border-radius:13px;padding:9px 11px;margin-bottom:11px;cursor:pointer}
+  .feed-w .bottle{width:26px;height:40px}.feed-w .bottle::after{top:12px;height:16px}
+  .feed-w b{font-size:13.5px;font-family:"Fraunces";font-weight:600;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .feed-w .sc{font-size:12px;color:var(--amber-deep);font-weight:700}
+  .feed-actions{display:flex;gap:20px;font-size:13px;color:var(--muted);font-weight:600}
+  .feed-actions span{display:inline-flex;align-items:center;gap:6px;cursor:pointer;transition:color .2s}
+  .feed-actions span:active{color:var(--amber)}
+  .feed-actions .liked{color:var(--amber)}
+
+  /* distillery */
+  .dist-top{margin-top:14px}
+  .dist-crest{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-family:"Fraunces";font-weight:600;font-size:26px;color:#fff;margin-bottom:12px;box-shadow:var(--shadow)}
+  #distName{font-family:"Fraunces";font-weight:600;font-size:26px;letter-spacing:-.02em;line-height:1.05}
+  .dist-link{margin-top:14px;background:var(--amber-soft);color:var(--amber-deep);font-weight:700;font-size:13.5px;padding:10px 16px;border-radius:100px;transition:transform .15s}
+  .dist-link:active{transform:scale(.96)}
+
+  /* compare */
+  .cmp-cta{width:100%;display:flex;align-items:center;gap:13px;text-align:left;background:var(--ink);color:var(--paper);border-radius:16px;padding:14px 16px;margin:14px 0 4px;box-shadow:var(--shadow);transition:transform .15s}
+  .cmp-cta:active{transform:scale(.98)}
+  .cmp-cta-ic{width:38px;height:38px;flex:0 0 auto;border-radius:11px;background:rgba(224,169,79,.22);color:var(--gold);display:grid;place-items:center;font-size:20px}
+  .cmp-cta span b{display:block;font-size:15px;font-weight:700}
+  .cmp-cta span small{font-size:12.5px;color:rgba(246,239,225,.65)}
+  .cmp-cta-go{margin-left:auto;color:var(--gold);font-size:18px}
+  .cmp-slots{display:flex;align-items:center;gap:10px;margin-top:16px}
+  .cmp-slot{flex:1;height:96px;border:2px dashed var(--line);border-radius:16px;background:var(--card);color:var(--muted);font-weight:600;font-size:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:.2s;overflow:hidden;padding:8px}
+  .cmp-slot.filled{border-style:solid;border-color:var(--amber);color:var(--ink)}
+  .cmp-slot .bottle{width:26px;height:40px}.cmp-slot .bottle::after{top:12px;height:16px}
+  .cmp-slot b{font-family:"Fraunces";font-weight:600;font-size:13px;line-height:1.1;text-align:center}
+  .cmp-vs{font-family:"Fraunces";font-weight:700;font-size:15px;color:var(--amber-deep);flex:0 0 auto}
+  .cmp-empty{text-align:center;color:var(--muted);padding:56px 24px;font-size:14.5px;line-height:1.5}
+  .cmp-box{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:6px 18px;box-shadow:var(--shadow);margin-bottom:14px}
+  /* info rows (3 col) */
+  .cmp-irow{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}
+  .cmp-irow:last-child{border-bottom:none}
+  .cmp-irow .ci-l{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700;white-space:nowrap}
+  .cmp-irow .ci-v{font-family:"Fraunces";font-weight:600;font-size:16px;line-height:1.1;min-width:0}
+  .cmp-irow .ci-v.l{text-align:right}.cmp-irow .ci-v.r{text-align:left}
+  .cmp-irow .ci-v.win{color:var(--green)}
+  .cmp-irow .ci-v.win::after{content:" ✓";font-size:11px}
+  /* flavor rows */
+  .cmp-sec{text-align:center;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--amber-deep);font-weight:700;margin:20px 0 14px}
+  .cmp-frow{margin:12px 0}
+  .cmp-frow .fl{text-align:center;font-size:11.5px;color:var(--ink-soft);font-weight:600;margin-bottom:5px}
+  .cmp-vals{display:flex;align-items:center;gap:9px}
+  .cmp-vals .v{width:30px;text-align:center;font-family:"IBM Plex Mono";font-weight:500;font-size:12.5px;color:var(--muted);flex:0 0 auto}
+  .cmp-vals .v.win{color:var(--green);font-weight:600}
+  .cmp-bar{flex:1;height:7px;background:var(--paper-2);border-radius:100px;overflow:hidden;display:flex}
+  .cmp-bar.l{justify-content:flex-end}
+  .cmp-bar i{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--gold),var(--amber));transition:width .7s cubic-bezier(.2,.8,.2,1)}
+  .cmp-bar.l i{background:linear-gradient(90deg,var(--amber),var(--gold))}
+  .cmp-verdict{background:var(--green-soft);border-radius:16px;padding:15px 16px;font-size:13.5px;color:var(--green);line-height:1.55;font-weight:500}
+  .cmp-verdict b{font-weight:700}
+
+  /* picker */
+  .picker{position:absolute;inset:0;z-index:70;background:rgba(43,32,21,.4);opacity:0;pointer-events:none;transition:opacity .3s;display:flex;align-items:flex-end}
+  .picker.open{opacity:1;pointer-events:auto}
+  .picker-sheet{width:100%;max-height:72%;background:var(--paper);border-radius:24px 24px 0 0;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+  .picker.open .picker-sheet{transform:none}
+  .picker-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 12px;border-bottom:1px solid var(--line)}
+  .picker-head b{font-family:"Fraunces";font-weight:600;font-size:18px}
+  .picker-head button{width:30px;height:30px;border-radius:50%;background:var(--paper-2);font-size:14px;color:var(--ink-soft)}
+  .picker-list{overflow-y:auto;padding:12px 16px 24px}
+  .picker-list::-webkit-scrollbar{display:none}
+
+  /* coleções curadas */
+  .col-scroll{display:flex;gap:12px;overflow-x:auto;margin:2px 0 8px;padding-bottom:4px}
+  .col-scroll::-webkit-scrollbar{display:none}
+  .col-card{flex:0 0 160px;height:150px;border-radius:20px;padding:16px;color:#fff;position:relative;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;justify-content:flex-end;cursor:pointer;transition:transform .15s}
+  .col-card:active{transform:scale(.97)}
+  .col-card::after{content:"";position:absolute;top:-30px;right:-20px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.16)}
+  .col-card .ce{position:absolute;top:14px;left:16px;font-size:26px;z-index:2}
+  .col-card b{font-family:"Fraunces";font-weight:600;font-size:18px;line-height:1.1;position:relative;z-index:2}
+  .col-card small{font-size:12px;opacity:.85;margin-top:3px;position:relative;z-index:2}
+  .col-emoji{width:56px;height:56px;border-radius:16px;background:var(--amber-soft);display:grid;place-items:center;font-size:28px}
+
+  /* share card */
+  .share{position:absolute;inset:0;z-index:80;background:rgba(43,32,21,.55);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .3s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:20px}
+  .share.open{opacity:1;pointer-events:auto}
+  .share-card{width:280px;border-radius:26px;padding:24px 22px 20px;color:#fff;position:relative;overflow:hidden;transform:scale(.9);transition:transform .35s cubic-bezier(.2,.8,.2,1);
+    background:linear-gradient(165deg,#3a2c1a,#241a10 55%,#1a1109);box-shadow:0 30px 70px -20px rgba(0,0,0,.6)}
+  .share.open .share-card{transform:none}
+  .share-card::after{content:"";position:absolute;top:-60px;right:-50px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(224,169,79,.45),transparent 68%)}
+  .sc-top{display:flex;align-items:center;justify-content:space-between;position:relative;z-index:2}
+  .sc-brand{display:flex;align-items:center;gap:8px;font-family:"Fraunces";font-weight:600;font-size:18px}
+  .sc-brand .mark{width:24px;height:24px}.sc-brand .mark span{width:8px;height:8px}
+  .sc-region{font-size:11px;color:var(--gold);font-weight:600;background:rgba(224,169,79,.18);padding:4px 10px;border-radius:100px}
+  .sc-bottle{display:flex;justify-content:center;margin:16px 0 12px;position:relative;z-index:2}
+  .sc-bottle .d-bottle{width:80px;height:120px}
+  .sc-name{font-family:"Fraunces";font-weight:600;font-size:24px;text-align:center;line-height:1.1;position:relative;z-index:2}
+  .sc-meta{font-size:12.5px;color:rgba(255,255,255,.65);text-align:center;margin-top:4px;position:relative;z-index:2}
+  .sc-score{display:flex;flex-direction:column;align-items:center;margin:16px 0;position:relative;z-index:2}
+  .sc-num{font-family:"Fraunces";font-weight:600;font-size:44px;color:var(--gold);line-height:1}
+  .sc-stars{color:var(--gold);font-size:15px;letter-spacing:3px;margin-top:4px}
+  .sc-flavors{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;position:relative;z-index:2}
+  .sc-flavors span{font-size:11px;font-weight:600;background:rgba(255,255,255,.12);padding:5px 11px;border-radius:100px}
+  .sc-foot{text-align:center;font-size:12.5px;color:rgba(255,255,255,.6);margin-top:18px;position:relative;z-index:2}
+  .sc-foot b{color:#fff}
+  .share-actions{display:flex;gap:10px;width:280px}
+  .share-actions .btn{flex:1;padding:15px}
+  .share-actions .btn-ico{width:52px;background:rgba(255,255,255,.14);border:none;color:#fff;border-radius:16px;font-size:18px}
+
+  /* carrossel horizontal com setas */
+  .hwrap{position:relative}
+  .harr{position:absolute;top:calc(50% - 4px);transform:translateY(-50%);width:34px;height:34px;border-radius:50%;
+    background:var(--card);border:1px solid var(--line);box-shadow:0 4px 12px -4px rgba(90,55,15,.4);
+    display:grid;place-items:center;font-size:20px;color:var(--amber-deep);z-index:6;transition:opacity .2s,transform .12s;font-family:"Fraunces";line-height:0;padding-bottom:3px}
+  .harr.l{left:-6px}.harr.r{right:-6px}
+  .harr.hide{opacity:0;pointer-events:none}
+  .harr:active{transform:translateY(-50%) scale(.88)}
+
+  /* drinks (na ficha) */
+  .drinks-scroll{display:flex;gap:12px;overflow-x:auto;margin-top:12px;padding-bottom:4px;scroll-behavior:smooth}
+  .drinks-scroll::-webkit-scrollbar{display:none}
+  .drink{flex:0 0 210px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:var(--shadow)}
+  .drink-top{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+  .drink-top .de{width:32px;height:32px;border-radius:9px;background:var(--amber-soft);display:grid;place-items:center;font-size:17px}
+  .drink-top b{font-family:"Fraunces";font-weight:600;font-size:16px}
+  .drink-ing{font-size:12.5px;color:var(--amber-deep);font-weight:600;line-height:1.4;margin-bottom:8px}
+  .drink-m{font-size:12.5px;color:var(--ink-soft);line-height:1.45}
+
+  /* learn cta + overlay */
+  .learn-cta{width:100%;display:flex;align-items:center;gap:13px;text-align:left;background:linear-gradient(135deg,#2e4534,#3f5e46);color:#fff;border-radius:18px;padding:16px;margin-top:22px;box-shadow:var(--shadow);transition:transform .15s}
+  .learn-cta:active{transform:scale(.98)}
+  .learn-ic{width:42px;height:42px;flex:0 0 auto;border-radius:12px;background:rgba(255,255,255,.15);display:grid;place-items:center;font-size:21px}
+  .learn-cta span b{display:block;font-size:15px;font-weight:700}
+  .learn-cta span small{font-size:12.5px;color:rgba(255,255,255,.72)}
+  .learn-go{margin-left:auto;color:var(--gold);font-size:19px}
+  .kick{font-family:"IBM Plex Mono";font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber-deep)}
+  .steps4{display:flex;flex-direction:column;gap:14px}
+  .s4{display:flex;gap:13px;align-items:flex-start}
+  .s4n{width:28px;height:28px;flex:0 0 auto;border-radius:50%;background:var(--amber);color:#fff;display:grid;place-items:center;font-family:"Fraunces";font-weight:600;font-size:14px}
+  .s4 b{font-size:15.5px;font-weight:600}
+  .s4 p{font-size:13.5px;color:var(--ink-soft);line-height:1.45;margin-top:2px}
+  .gloss{border:1px solid var(--line);border-radius:14px;margin-bottom:9px;overflow:hidden;background:var(--card)}
+  .gloss summary{padding:13px 15px;font-weight:600;font-size:14.5px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}
+  .gloss summary::-webkit-details-marker{display:none}
+  .gloss summary::after{content:"+";color:var(--amber);font-size:19px;font-weight:400}
+  .gloss[open] summary::after{content:"–"}
+  .gloss p{padding:0 15px 14px;font-size:13.5px;color:var(--ink-soft);line-height:1.5}
+  .ltype{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 15px;margin-bottom:9px;box-shadow:var(--shadow)}
+  .ltype b{font-size:15px;font-weight:600;color:var(--amber-deep)}
+  .ltype p{font-size:13px;color:var(--ink-soft);line-height:1.45;margin-top:3px}
+
+  /* badges (conquistas) */
+  .badge-count{font-size:13px;color:var(--muted);font-weight:600;font-family:"IBM Plex Mono"}
+  .badges{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 8px;margin-top:4px}
+  .bdg{text-align:center;opacity:.4;filter:grayscale(1);transition:.3s}
+  .bdg.on{opacity:1;filter:none}
+  .bdg .em{width:52px;height:52px;margin:0 auto 6px;border-radius:16px;display:grid;place-items:center;font-size:24px;background:var(--paper-2);position:relative}
+  .bdg.on .em{background:radial-gradient(circle at 32% 28%,var(--gold),var(--amber-soft))}
+  .bdg small{font-size:10.5px;color:var(--ink-soft);font-weight:600;line-height:1.15;display:block}
+  .bdg .lock{position:absolute;bottom:-2px;right:-2px;font-size:12px}
+
+  /* history */
+  .hist-box{margin-top:16px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:var(--shadow)}
+  .hist-box p{font-size:14.5px;color:var(--ink-soft);line-height:1.55}
+  .hist-box .lbl{color:var(--amber-deep)}
+
+  /* shops */
+  .best-tag{font-size:10.5px;font-weight:700;color:var(--green);background:var(--green-soft);padding:3px 9px;border-radius:100px;letter-spacing:0;text-transform:none}
+  .shop{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:9px;box-shadow:var(--shadow)}
+  .shop.best{border-color:var(--green);box-shadow:0 0 0 1px var(--green) inset,var(--shadow)}
+  .shop .logo{width:36px;height:36px;flex:0 0 auto;border-radius:9px;background:var(--paper-2);display:grid;place-items:center;font-family:"Fraunces";font-weight:600;font-size:16px;color:var(--amber-deep)}
+  .shop-info{flex:1;min-width:0}
+  .shop-info b{font-size:14.5px;font-weight:600;display:block;line-height:1.2}
+  .shop-info small{font-size:12px;color:var(--muted)}
+  .shop-price{text-align:right;flex:0 0 auto}
+  .shop-price .p{font-family:"Fraunces";font-weight:600;font-size:15px;color:var(--ink)}
+  .shop .buy{flex:0 0 auto;background:var(--ink);color:var(--paper);font-size:12.5px;font-weight:700;padding:8px 14px;border-radius:100px;transition:transform .15s}
+  .shop.best .buy{background:var(--green)}
+  .shop .buy:active{transform:scale(.94)}
+  .shop-note{background:var(--amber-soft);border-radius:14px;padding:14px;font-size:13.5px;color:var(--amber-deep);line-height:1.45;font-weight:500}
+
+  /* rate */
+  .rate-box{margin-top:16px;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:var(--shadow)}
+  .rate-box .lbl{margin-bottom:9px}
+  .stars-in{display:flex;gap:8px;justify-content:center;font-size:30px;color:var(--line)}
+  .stars-in span{cursor:pointer;transition:transform .15s ease}
+  .stars-in span:active{transform:scale(1.2)}
+  .stars-in span.on{color:var(--gold)}
+
+  /* sticky add */
+  .d-foot{position:sticky;bottom:0;padding:14px 20px;background:linear-gradient(180deg,transparent,var(--paper) 30%);display:flex;gap:10px}
+  .btn{flex:1;padding:16px;border-radius:16px;font-weight:700;font-size:16px;transition:transform .15s ease,box-shadow .2s}
+  .btn:active{transform:scale(.97)}
+  .btn-amber{background:linear-gradient(180deg,var(--gold),var(--amber));color:#fff;box-shadow:0 10px 22px -8px rgba(191,116,32,.8)}
+  .btn-amber.saved{background:var(--green);box-shadow:0 10px 22px -8px rgba(63,94,70,.6)}
+  .btn-ico{flex:0 0 auto;width:54px;background:var(--card);border:1px solid var(--line);border-radius:16px;font-size:20px;display:grid;place-items:center}
+
+  /* CELLAR */
+  .empty{text-align:center;padding:70px 30px;color:var(--muted)}
+  .empty .em{font-size:52px;margin-bottom:16px;opacity:.7}
+  .empty h3{font-family:"Fraunces";font-weight:600;font-size:20px;color:var(--ink);margin-bottom:8px}
+  .empty p{font-size:14.5px;margin-bottom:20px}
+  .empty button{background:var(--ink);color:var(--paper);padding:12px 24px;border-radius:100px;font-weight:600;font-size:14.5px}
+  .my-rate{color:var(--gold);font-size:12px;letter-spacing:1px;margin-top:5px}
+
+  /* SCAN */
+  #scan .pad{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;text-align:center}
+  .viewfinder{width:250px;height:250px;border-radius:32px;position:relative;background:
+     linear-gradient(135deg,#241a10,#3a2c1a);overflow:hidden;box-shadow:var(--shadow-lg);margin-bottom:8px}
+  .viewfinder .corner{position:absolute;width:34px;height:34px;border:3px solid var(--gold)}
+  .c1{top:16px;left:16px;border-right:none;border-bottom:none;border-radius:10px 0 0 0}
+  .c2{top:16px;right:16px;border-left:none;border-bottom:none;border-radius:0 10px 0 0}
+  .c3{bottom:16px;left:16px;border-right:none;border-top:none;border-radius:0 0 0 10px}
+  .c4{bottom:16px;right:16px;border-left:none;border-top:none;border-radius:0 0 10px 0}
+  .scanline{position:absolute;left:16px;right:16px;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);top:20px;box-shadow:0 0 12px var(--gold);opacity:0}
+  .viewfinder.scanning .scanline{opacity:1;animation:scanmove 1.6s ease-in-out infinite}
+  @keyframes scanmove{0%,100%{top:24px}50%{top:222px}}
+  .vf-ghost{position:absolute;inset:0;display:grid;place-items:center;font-size:70px;opacity:.25;filter:grayscale(1)}
+  .viewfinder.scanning .vf-ghost{animation:pulse 1.2s ease-in-out infinite}
+  @keyframes pulse{50%{opacity:.4}}
+  .scan-status{font-family:"IBM Plex Mono";font-size:13px;color:var(--muted);margin:18px 0 22px;min-height:20px}
+  .scan-btn{background:linear-gradient(180deg,var(--gold),var(--amber));color:#fff;width:76px;height:76px;border-radius:50%;font-size:30px;box-shadow:0 12px 26px -8px rgba(191,116,32,.8);display:grid;place-items:center;transition:transform .15s}
+  .scan-btn:active{transform:scale(.92)}
+  #scan h2{font-family:"Fraunces";font-weight:600;font-size:23px;margin-bottom:6px}
+  #scan .hint{font-size:14px;color:var(--muted);max-width:260px}
+
+  /* PROFILE */
+  .prof-head{text-align:center;padding:12px 0 20px}
+  .prof-av{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--amber));display:grid;place-items:center;color:#fff;font-weight:800;font-size:28px;margin:0 auto 12px;box-shadow:var(--shadow-lg)}
+  .prof-head h2{font-family:"Fraunces";font-weight:600;font-size:24px}
+  .prof-head p{font-size:14px;color:var(--muted)}
+  .prof-stats{display:flex;gap:10px;margin:18px 0}
+  .prof-stats .s{flex:1;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px 8px;text-align:center;box-shadow:var(--shadow)}
+  .prof-stats .n{font-family:"Fraunces";font-weight:600;font-size:24px;color:var(--amber-deep)}
+  .prof-stats .l{font-size:11.5px;color:var(--muted);margin-top:3px}
+  .radar-wrap{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:24px;box-shadow:var(--shadow);text-align:center;margin-top:6px}
+  .radar-wrap h4{font-family:"Fraunces";font-weight:600;font-size:18px;margin-bottom:2px}
+  .radar-wrap .sub{font-size:13px;color:var(--muted);margin-bottom:8px}
+  .radar{width:240px;height:240px;margin:0 auto}
+  .radar polygon.grid{fill:none;stroke:var(--line);stroke-width:1}
+  .radar polygon.data{fill:rgba(191,116,32,.22);stroke:var(--amber);stroke-width:2.5;transition:all .8s ease}
+  .radar line{stroke:var(--line);stroke-width:1}
+  .radar text{font-family:"IBM Plex Mono";font-size:9.5px;fill:var(--ink-soft);font-weight:500}
+
+  /* bottom nav */
+  .nav{position:absolute;bottom:0;left:0;right:0;z-index:45;background:rgba(255,253,247,.92);backdrop-filter:blur(14px);
+    border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;padding:10px 8px 14px}
+  .nav button{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600;color:var(--muted);width:64px;transition:color .2s}
+  .nav button .i{font-size:21px;transition:transform .2s}
+  .nav button.on{color:var(--amber-deep)}
+  .nav button.on .i{transform:translateY(-2px) scale(1.08)}
+  .nav .scan-tab{width:58px;height:58px;border-radius:50%;background:linear-gradient(180deg,var(--gold),var(--amber));
+    color:#fff;margin-top:-24px;box-shadow:0 10px 22px -6px rgba(191,116,32,.8);justify-content:center}
+  .nav .scan-tab .i{font-size:26px}
+  .nav .scan-tab span{display:none}
+
+  /* toast */
+  .toast{position:absolute;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);z-index:70;
+    background:var(--ink);color:var(--paper);padding:12px 20px;border-radius:100px;font-size:14px;font-weight:600;
+    box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.35s;white-space:nowrap}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* ranking */
+  .rank-card{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);
+    border-radius:18px;padding:12px 14px;margin-bottom:11px;box-shadow:var(--shadow);transition:transform .15s ease;cursor:pointer}
+  .rank-card:active{transform:scale(.98)}
+  .rank-n{font-family:"Fraunces";font-weight:600;font-size:17px;color:var(--muted);width:26px;text-align:center;flex:0 0 auto}
+  .rank-card.top .rank-n{color:var(--amber-deep)}
+  .rank-card .bottle{width:34px;height:52px}
+  .rank-card .bottle::after{top:16px;height:20px}
+  .rank-info{flex:1;min-width:0}
+  .rank-info h4{font-family:"Fraunces";font-weight:600;font-size:15.5px;line-height:1.15;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rank-badges{display:flex;gap:6px;margin-top:5px;flex-wrap:wrap}
+  .badge{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:100px;letter-spacing:.02em}
+  .badge-style{background:var(--paper-2);color:var(--ink-soft)}
+  .badge-tier{color:#fff}
+  .rank-price{text-align:right;flex:0 0 auto}
+  .rank-price .p{font-family:"Fraunces";font-weight:600;font-size:15px;color:var(--ink);line-height:1}
+  .rank-price .st{color:var(--gold);font-size:10px;margin-top:3px}
+
+  /* community reviews */
+  .rev{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:10px;box-shadow:var(--shadow)}
+  .rev-top{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+  .rev-av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:14px;flex:0 0 auto}
+  .rev-who b{font-size:14px;font-weight:600;display:block;line-height:1.1}
+  .rev-who small{font-size:11.5px;color:var(--muted)}
+  .rev-rt{margin-left:auto;color:var(--gold);font-size:12px;letter-spacing:.5px}
+  .rev p{font-size:14px;color:var(--ink-soft);line-height:1.45}
+
+  /* segmented (cellar) */
+  .seg{display:flex;background:var(--paper-2);border-radius:100px;padding:4px;margin:14px 0 18px}
+  .seg button{flex:1;padding:9px;border-radius:100px;font-size:13.5px;font-weight:600;color:var(--muted);transition:.2s}
+  .seg button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+
+  /* wishlist heart on card */
+  .heart-ico{color:var(--muted)}
+  .heart-ico.on{color:var(--amber)}
+
+  /* ONBOARDING */
+  .onb{position:absolute;inset:0;z-index:100;background:
+     radial-gradient(circle at 50% 0%,var(--amber-soft),var(--paper) 55%);
+     display:flex;flex-direction:column;padding:40px 28px;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+  .onb.hide{transform:translateY(-100%)}
+  .onb .step{display:none;flex:1;flex-direction:column;justify-content:center;animation:fade .4s ease}
+  .onb .step.active{display:flex}
+  .onb .big-mark{width:66px;height:66px;border-radius:50%;display:grid;place-items:center;margin-bottom:22px;
+    background:radial-gradient(circle at 32% 28%,var(--gold),var(--amber) 55%,var(--amber-deep));
+    box-shadow:inset 0 2px 4px rgba(255,255,255,.4),0 10px 24px -8px rgba(154,78,23,.6)}
+  .onb .big-mark span{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.55)}
+  .onb h1{font-family:"Fraunces";font-weight:600;font-size:34px;line-height:1.05;letter-spacing:-.02em;margin-bottom:12px}
+  .onb h1 em{font-style:italic;color:var(--amber-deep)}
+  .onb .sub{font-size:16px;color:var(--ink-soft);margin-bottom:8px}
+  .onb .field{margin-top:26px;margin-bottom:22px}
+  .onb .field label{font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:8px}
+  .onb input{width:100%;padding:15px 18px;border-radius:16px;border:1.5px solid var(--line);background:var(--card);font-family:inherit;font-size:16px;color:var(--ink);outline:none}
+  .onb input:focus{border-color:var(--amber)}
+  .onb .taste{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0 26px}
+  .onb .taste button{padding:11px 16px;border-radius:100px;border:1.5px solid var(--line);background:var(--card);font-size:14.5px;font-weight:600;color:var(--ink-soft);transition:.2s}
+  .onb .taste button.on{background:var(--amber-soft);border-color:transparent;color:var(--amber-deep)}
+  .onb .big-btn{padding:16px;border-radius:16px;font-weight:700;font-size:16px;background:linear-gradient(180deg,var(--gold),var(--amber));color:#fff;box-shadow:0 12px 26px -8px rgba(191,116,32,.8);transition:transform .15s}
+  .onb .big-btn:active{transform:scale(.97)}
+  .onb .skip{text-align:center;margin-top:14px;font-size:14px;color:var(--muted);font-weight:600}
+  .dots{display:flex;gap:7px;justify-content:center;margin-top:16px}
+  .dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}
+  .dots i.on{background:var(--amber);width:20px;border-radius:100px}
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <!-- ============ ONBOARDING ============ -->
+  <div class="onb" id="onb">
+    <!-- step 1 -->
+    <div class="step active" data-step="0">
+      <div class="big-mark"><span></span></div>
+      <h1>Bem-vindo ao <em>Dram</em>.</h1>
+      <p class="sub">Descubra, avalie e guarde seus whiskies favoritos. Sem precisar ser especialista.</p>
+      <button class="big-btn" style="margin-top:28px" onclick="onbNext()">Começar 🥃</button>
+      <div class="dots"><i class="on"></i><i></i><i></i></div>
+    </div>
+    <!-- step 2 -->
+    <div class="step" data-step="1">
+      <div class="big-mark"><span></span></div>
+      <h1>Como te <em>chamamos?</em></h1>
+      <p class="sub">Pra deixar sua adega com a sua cara.</p>
+      <div class="field">
+        <label>Seu nome</label>
+        <input id="onbName" placeholder="Ex.: Lucas" maxlength="20" />
+      </div>
+      <button class="big-btn" onclick="onbNext()">Continuar</button>
+      <div class="dots"><i></i><i class="on"></i><i></i></div>
+    </div>
+    <!-- step 3 -->
+    <div class="step" data-step="2">
+      <div class="big-mark"><span></span></div>
+      <h1>O que você <em>curte?</em></h1>
+      <p class="sub">Escolha alguns sabores pra afinar suas recomendações.</p>
+      <div class="taste" id="onbTaste">
+        <button data-t="Defumado">🔥 Defumado</button>
+        <button data-t="Doce">🍯 Doce</button>
+        <button data-t="Frutado">🍎 Frutado</button>
+        <button data-t="Especiaria">🌶️ Apimentado</button>
+        <button data-t="Madeira">🌳 Amadeirado</button>
+        <button data-t="Salgado">🌊 Marítimo</button>
+      </div>
+      <button class="big-btn" onclick="onbFinish()">Entrar no app</button>
+      <div class="skip" onclick="onbFinish()">Pular por agora</div>
+      <div class="dots"><i></i><i></i><i class="on"></i></div>
+    </div>
+  </div>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="tb-row">
+      <div class="brand"><span class="mark"><span></span></span>Dram</div>
+      <div class="avatar" id="topAv">L</div>
+    </div>
+  </div>
+
+  <div class="screen">
+
+    <!-- ============ DESCOBRIR ============ -->
+    <div class="page active" id="discover">
+      <div class="pad">
+        <div style="margin-top:4px">
+          <div class="greet">Boa noite 🌙</div>
+          <div class="greet"><b>O que vamos provar hoje?</b></div>
+        </div>
+        <div class="seg" style="margin:16px 0 4px">
+          <button class="on" data-dv="forYou" onclick="setDiscover('forYou',this)">✨ Pra você</button>
+          <button data-dv="friends" onclick="setDiscover('friends',this)">👥 Amigos</button>
+        </div>
+
+        <div id="forYou">
+          <div class="search">
+            <span>🔍</span>
+            <input id="q" placeholder="Buscar whisky, destilaria, região..." oninput="renderList()" />
+          </div>
+          <div class="chips" id="chips"></div>
+
+          <div class="feat" onclick="openDetail('lagavulin16')">
+            <div class="tag">◦ Destaque do dia</div>
+            <h3>Lagavulin 16</h3>
+            <p>O rei defumado de Islay. Fogueira à beira-mar em forma de dose.</p>
+            <div class="go">Ver ficha completa →</div>
+          </div>
+
+          <div class="section-t">Coleções pra você</div>
+          <div class="section-s">Listas montadas a dedo</div>
+          <div class="hwrap">
+            <div class="col-scroll" id="colScroll"></div>
+            <button class="harr l hide" onclick="hscroll('colScroll',-1)">‹</button>
+            <button class="harr r" onclick="hscroll('colScroll',1)">›</button>
+          </div>
+
+          <div class="section-t">Bem avaliados</div>
+          <div class="section-s">Os favoritos da comunidade agora</div>
+          <div id="list"></div>
+
+          <button class="learn-cta" onclick="openLearn()">
+            <span class="learn-ic">📚</span>
+            <span><b>Aprenda whisky em 5 minutos</b><small>Como degustar, tipos e glossário sem enrolação</small></span>
+            <span class="learn-go">→</span>
+          </button>
+        </div>
+
+        <div id="friends" style="display:none">
+          <div class="section-t" style="margin-top:18px">Rolando entre amigos</div>
+          <div class="section-s">O que sua turma anda provando</div>
+          <div id="feedList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ ADEGA ============ -->
+    <div class="page" id="cellar">
+      <div class="pad">
+        <div class="section-t" style="margin-top:6px">Minha adega</div>
+        <div class="section-s" id="cellarSub">O que você já provou e salvou</div>
+        <div class="seg" id="cellarSeg">
+          <button class="on" data-view="proved" onclick="setCellarView('proved',this)">🥃 Provados</button>
+          <button data-view="wish" onclick="setCellarView('wish',this)">♡ Quero provar</button>
+        </div>
+        <div id="cellarList"></div>
+      </div>
+    </div>
+
+    <!-- ============ RANKING ============ -->
+    <div class="page" id="ranking">
+      <div class="pad">
+        <div class="section-t" style="margin-top:6px">Ranking por preço</div>
+        <div class="section-s" id="rankSub">Do colecionável ao dia a dia</div>
+        <button class="cmp-cta" onclick="openCompare()">
+          <span class="cmp-cta-ic">⇄</span>
+          <span><b>Comparar dois whiskies</b><small>Sabor, preço e nota lado a lado</small></span>
+          <span class="cmp-cta-go">→</span>
+        </button>
+        <div class="chips" id="tierChips"></div>
+        <div id="rankList"></div>
+      </div>
+    </div>
+
+    <!-- ============ SCAN ============ -->
+    <div class="page" id="scan">
+      <div class="pad">
+        <h2>Escanear rótulo</h2>
+        <p class="hint" style="margin-bottom:26px">Aponte pra garrafa ou pro cardápio do bar</p>
+        <div class="viewfinder" id="vf">
+          <div class="vf-ghost">🥃</div>
+          <div class="scanline"></div>
+          <span class="corner c1"></span><span class="corner c2"></span>
+          <span class="corner c3"></span><span class="corner c4"></span>
+        </div>
+        <div class="scan-status" id="scanStatus">Toque no botão pra escanear</div>
+        <button class="scan-btn" id="scanBtn" onclick="doScan()">📷</button>
+      </div>
+    </div>
+
+    <!-- ============ PERFIL ============ -->
+    <div class="page" id="profile">
+      <div class="pad">
+        <div class="prof-head">
+          <div class="prof-av">L</div>
+          <h2>Lucas</h2>
+          <p id="profSub">Degustador iniciante</p>
+        </div>
+        <div class="prof-stats">
+          <div class="s"><div class="n" id="stProved">0</div><div class="l">provados</div></div>
+          <div class="s"><div class="n" id="stAvg">—</div><div class="l">nota média</div></div>
+          <div class="s"><div class="n" id="stRegion">—</div><div class="l">região fav.</div></div>
+        </div>
+        <div class="radar-wrap">
+          <h4>Seu mapa de sabor</h4>
+          <div class="sub" id="radarSub">prove whiskies pra ver seu perfil</div>
+          <svg class="radar" viewBox="0 0 200 200">
+            <polygon class="grid" points="100,20 168,60 168,140 100,180 32,140 32,60"/>
+            <polygon class="grid" points="100,50 143,75 143,125 100,150 57,125 57,75"/>
+            <line x1="100" y1="100" x2="100" y2="20"/><line x1="100" y1="100" x2="168" y2="60"/>
+            <line x1="100" y1="100" x2="168" y2="140"/><line x1="100" y1="100" x2="100" y2="180"/>
+            <line x1="100" y1="100" x2="32" y2="140"/><line x1="100" y1="100" x2="32" y2="60"/>
+            <polygon class="data" id="radarData" points="100,100 100,100 100,100 100,100 100,100 100,100"/>
+            <text x="82" y="14">Defumado</text><text x="172" y="60">Frutado</text>
+            <text x="172" y="146">Doce</text><text x="84" y="196">Especiaria</text>
+            <text x="2" y="146">Salgado</text><text x="4" y="60">Madeira</text>
+          </svg>
+        </div>
+
+        <div class="section-t" style="margin-top:24px;display:flex;align-items:baseline;justify-content:space-between">
+          <span>Conquistas</span><span id="badgeCount" class="badge-count"></span>
+        </div>
+        <div class="badges" id="badgesGrid"></div>
+      </div>
+    </div>
+
+  </div><!-- /screen -->
+
+  <!-- ============ DETAIL OVERLAY ============ -->
+  <div class="detail" id="detail">
+    <div class="d-hero">
+      <button class="back" onclick="closeDetail()">←</button>
+      <div class="d-main">
+        <div class="d-bottle bottle-photo" id="dBottle"><img id="dBottleImg" alt="" /></div>
+        <div>
+          <h2 id="dName"></h2>
+          <div class="dm" id="dMeta"></div>
+          <span class="rg" id="dRegion"></span>
+        </div>
+      </div>
+      <div class="d-stats">
+        <div class="d-stat"><div class="n" id="dScore"></div><div class="l">nota comunidade</div></div>
+        <div class="d-stat"><div class="n" id="dVotes"></div><div class="l">avaliações</div></div>
+        <div class="d-stat"><div class="n" id="dPrice"></div><div class="l">preço médio</div></div>
+      </div>
+    </div>
+    <div class="d-body">
+      <div class="lbl">Perfil de sabor</div>
+      <div id="dFlavors"></div>
+      <div class="notes-box">
+        <div class="lbl" style="margin-bottom:8px">Notas de degustação</div>
+        <p id="dNotes"></p>
+        <div class="lbl" style="margin-top:18px;margin-bottom:0">Harmoniza com</div>
+        <div class="pair" id="dPair"></div>
+      </div>
+
+      <div class="lbl" style="margin-top:24px">Drinks pra fazer</div>
+      <div class="hwrap">
+        <div class="drinks-scroll" id="dDrinks"></div>
+        <button class="harr l hide" onclick="hscroll('dDrinks',-1)">‹</button>
+        <button class="harr r" onclick="hscroll('dDrinks',1)">›</button>
+      </div>
+
+      <div class="hist-box">
+        <div class="lbl" style="display:flex;align-items:center;gap:7px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg> História</div>
+        <p id="dHist"></p>
+        <button class="dist-link" id="distLink" onclick="openDistilleryFromCurrent()">Conhecer a destilaria →</button>
+      </div>
+
+      <div class="lbl" style="margin-top:24px;display:flex;align-items:center;justify-content:space-between">
+        <span>Onde comprar</span><span id="shopBest" class="best-tag"></span>
+      </div>
+      <div id="dShops"></div>
+
+      <div class="rate-box">
+        <div class="lbl">Sua nota</div>
+        <div class="stars-in" id="rateStars">
+          <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
+        </div>
+      </div>
+
+      <div class="lbl" style="margin-top:18px">Avaliações da comunidade</div>
+      <div id="dReviews"></div>
+    </div>
+    <div class="d-foot">
+      <button class="btn btn-amber" id="saveBtn" onclick="toggleSave()">Adicionar à adega</button>
+      <button class="btn-ico" id="wishBtn" onclick="toggleWish()">♡</button>
+      <button class="btn-ico" onclick="shareW()">↗</button>
+    </div>
+  </div>
+
+  <!-- ============ DESTILARIA ============ -->
+  <div class="detail" id="distillery" style="z-index:55">
+    <div class="d-hero" id="distHero">
+      <button class="back" onclick="closeDistillery()">←</button>
+      <div class="dist-top">
+        <div class="dist-crest" id="distCrest"></div>
+        <h2 id="distName"></h2>
+        <div class="dm" id="distMeta"></div>
+      </div>
+      <div class="d-stats">
+        <div class="d-stat"><div class="n" id="distFounded"></div><div class="l">fundada</div></div>
+        <div class="d-stat"><div class="n" id="distRegion"></div><div class="l">região</div></div>
+        <div class="d-stat"><div class="n" id="distCountry"></div><div class="l">país</div></div>
+      </div>
+    </div>
+    <div class="d-body">
+      <div class="lbl">A destilaria</div>
+      <div class="hist-box" style="margin-top:0"><p id="distStory"></p></div>
+      <div class="lbl" style="margin-top:24px">Garrafas no catálogo</div>
+      <div id="distBottles"></div>
+    </div>
+  </div>
+
+  <!-- ============ COMPARAR ============ -->
+  <div class="detail" id="compare" style="z-index:56">
+    <div class="d-hero" style="background:linear-gradient(180deg,var(--green-soft),var(--paper));padding-top:24px">
+      <button class="back" onclick="closeCompare()">←</button>
+      <h2 style="font-family:'Fraunces';font-weight:600;font-size:24px;margin-top:16px">Comparar</h2>
+      <div class="dm">Escolha dois whiskies pra ver lado a lado</div>
+      <div class="cmp-slots">
+        <button class="cmp-slot" id="cmpSlot0" onclick="pickCompare(0)"></button>
+        <span class="cmp-vs">VS</span>
+        <button class="cmp-slot" id="cmpSlot1" onclick="pickCompare(1)"></button>
+      </div>
+    </div>
+    <div class="d-body" id="cmpResult"></div>
+  </div>
+
+  <!-- ============ SELETOR (picker) ============ -->
+  <div class="picker" id="cmpPicker">
+    <div class="picker-sheet">
+      <div class="picker-head"><b>Escolher whisky</b><button onclick="closePicker()">✕</button></div>
+      <div class="picker-list" id="pickerList"></div>
+    </div>
+  </div>
+
+  <!-- ============ COLEÇÃO ============ -->
+  <div class="detail" id="collection" style="z-index:55">
+    <div class="d-hero" id="colHero">
+      <button class="back" onclick="closeCollection()">←</button>
+      <div style="margin-top:16px">
+        <div class="col-emoji" id="colEmoji"></div>
+        <h2 id="colTitle" style="font-family:'Fraunces';font-weight:600;font-size:26px;letter-spacing:-.02em;line-height:1.05;margin-top:12px"></h2>
+        <div class="dm" id="colSub"></div>
+      </div>
+    </div>
+    <div class="d-body"><div id="colBottles"></div></div>
+  </div>
+
+  <!-- ============ CARD DE COMPARTILHAMENTO ============ -->
+  <div class="share" id="share">
+    <div class="share-card" id="shareCard">
+      <div class="sc-top">
+        <div class="sc-brand"><span class="mark"><span></span></span>Dram</div>
+        <div class="sc-region" id="scRegion"></div>
+      </div>
+      <div class="sc-bottle"><div class="d-bottle bottle-photo" id="scBottleBox"><img id="scImg" alt=""/></div></div>
+      <div class="sc-name" id="scName"></div>
+      <div class="sc-meta" id="scMeta"></div>
+      <div class="sc-score"><div class="sc-num" id="scScore"></div><div class="sc-stars" id="scStars"></div></div>
+      <div class="sc-flavors" id="scFlavors"></div>
+      <div class="sc-foot">descubra o seu no <b>Dram</b> 🥃</div>
+    </div>
+    <div class="share-actions">
+      <button class="btn btn-amber" onclick="toast('Imagem salva na galeria 📸')">Baixar imagem</button>
+      <button class="btn-ico" onclick="toast('Link copiado! 🔗')">🔗</button>
+      <button class="btn-ico" onclick="closeShare()">✕</button>
+    </div>
+  </div>
+
+  <!-- ============ APRENDER ============ -->
+  <div class="detail" id="learn" style="z-index:57">
+    <div class="d-hero" style="background:linear-gradient(180deg,var(--amber-soft),var(--paper))">
+      <button class="back" onclick="closeLearn()">←</button>
+      <div style="margin-top:14px">
+        <div class="kick">📚 Guia rápido</div>
+        <h2 style="font-family:'Fraunces';font-weight:600;font-size:27px;letter-spacing:-.02em;line-height:1.05;margin-top:6px">Aprenda whisky<br>sem enrolação</h2>
+      </div>
+    </div>
+    <div class="d-body">
+      <div class="lbl">Como degustar em 4 passos</div>
+      <div class="steps4">
+        <div class="s4"><span class="s4n">1</span><div><b>Olhe a cor</b><p>Do palha ao mogno — quanto mais escuro, mais tempo na madeira (ou xerez).</p></div></div>
+        <div class="s4"><span class="s4n">2</span><div><b>Sinta o aroma</b><p>Boca entreaberta, nariz sem afundar. Procure fumaça, fruta, baunilha, mel.</p></div></div>
+        <div class="s4"><span class="s4n">3</span><div><b>Dê um gole pequeno</b><p>Deixe rolar pela língua. Doce na ponta, amargo no fundo, calor no meio.</p></div></div>
+        <div class="s4"><span class="s4n">4</span><div><b>Note o final</b><p>O gosto que fica. Curto e seco ou longo e defumado? Aí mora a personalidade.</p></div></div>
+      </div>
+
+      <div class="lbl" style="margin-top:26px">Uma gota d'água ajuda</div>
+      <p style="font-size:14.5px;color:var(--ink-soft);line-height:1.55">Algumas gotas de água (nunca gelo em maltes finos) "abrem" o whisky e liberam aromas escondidos. Prove antes e depois — a diferença surpreende.</p>
+
+      <div class="lbl" style="margin-top:26px">Tipos de whisky</div>
+      <div id="learnTypes"></div>
+
+      <div class="lbl" style="margin-top:26px">Glossário essencial</div>
+      <div id="learnGloss"></div>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <div class="nav">
+    <button class="on" data-tab="discover" onclick="go('discover',this)"><span class="i">🧭</span><span>Descobrir</span></button>
+    <button data-tab="ranking" onclick="go('ranking',this)"><span class="i">💰</span><span>Ranking</span></button>
+    <button class="scan-tab" data-tab="scan" onclick="go('scan',this)"><span class="i">📷</span><span>Scan</span></button>
+    <button data-tab="cellar" onclick="go('cellar',this)"><span class="i">🗄️</span><span>Adega</span></button>
+    <button data-tab="profile" onclick="go('profile',this)"><span class="i">👤</span><span>Perfil</span></button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* ---------------- DATA ---------------- */
+const WHISKIES = [
+  {id:'lagavulin16',name:'Lagavulin 16',dist:'Single Malt · 43% · 16 anos',region:'Islay',color:'linear-gradient(160deg,#3f5e46,#2e4534)',
+   score:4.6,votes:8420,price:'R$ 480',
+   fl:{Defumado:92,Frutado:30,Doce:48,Especiaria:55,Salgado:72,Madeira:64},
+   notes:'Fogueira à beira-mar, iodo e turfa densa, com um fundo doce de xerez e final longo e defumado.',pair:['Chocolate amargo','Queijo azul','Charuto']},
+  {id:'ardbeg10',name:'Ardbeg 10',dist:'Single Malt · 46% · 10 anos',region:'Islay',color:'linear-gradient(160deg,#2c3b30,#1e2a22)',
+   score:4.5,votes:6180,price:'R$ 420',
+   fl:{Defumado:98,Frutado:35,Doce:40,Especiaria:60,Salgado:66,Madeira:50},
+   notes:'Turfa brutal e alcatrão, limão e pimenta-do-reino. Intenso do começo ao fim — pra quem gosta de fumaça de verdade.',pair:['Ostras','Bacon','Café']},
+  {id:'macallan12',name:'Macallan 12 Sherry',dist:'Single Malt · 40% · 12 anos',region:'Speyside',color:'linear-gradient(160deg,#7a3418,#5c2410)',
+   score:4.4,votes:9910,price:'R$ 520',
+   fl:{Defumado:12,Frutado:70,Doce:82,Especiaria:58,Salgado:15,Madeira:78},
+   notes:'Frutas secas, uva-passa e canela dos barris de xerez. Aveludado, doce e clássico — o whisky de presentear.',pair:['Nozes','Torta de maçã','Damasco']},
+  {id:'glenfiddich12',name:'Glenfiddich 12',dist:'Single Malt · 40% · 12 anos',region:'Speyside',color:'linear-gradient(160deg,#c98a2e,#a56a1c)',
+   score:4.1,votes:11200,price:'R$ 240',
+   fl:{Defumado:10,Frutado:82,Doce:66,Especiaria:38,Salgado:12,Madeira:55},
+   notes:'Pera fresca, maçã verde e um toque de baunilha. Leve, floral e fácil de beber — ótima porta de entrada.',pair:['Frutas frescas','Queijo brie','Mel']},
+  {id:'talisker10',name:'Talisker 10',dist:'Single Malt · 45,8% · 10 anos',region:'Ilha de Skye',color:'linear-gradient(160deg,#3a5566,#26404e)',
+   score:4.4,votes:7340,price:'R$ 360',
+   fl:{Defumado:70,Frutado:38,Doce:44,Especiaria:78,Salgado:88,Madeira:52},
+   notes:'Pimenta ardida, maresia e uma fumaça salgada inconfundível. Termina com aquele calorzinho apimentado na garganta.',pair:['Frutos do mar','Carne defumada','Pimenta']},
+  {id:'yamazaki12',name:'Yamazaki 12',dist:'Single Malt Japonês · 43% · 12 anos',region:'Japão',color:'linear-gradient(160deg,#c0913f,#9c6f22)',
+   score:4.5,votes:5620,price:'R$ 1.290',
+   fl:{Defumado:20,Frutado:74,Doce:68,Especiaria:50,Salgado:18,Madeira:70},
+   notes:'Fruta madura, mel e um toque incenso da madeira mizunara. Elegante, delicado e precisamente equilibrado.',pair:['Sushi','Chá verde','Frutas cítricas']},
+  {id:'buffalotrace',name:'Buffalo Trace',dist:'Bourbon · 45% · Kentucky',region:'EUA',color:'linear-gradient(160deg,#b5621a,#8a4512)',
+   score:4.3,votes:8890,price:'R$ 280',
+   fl:{Defumado:22,Frutado:50,Doce:80,Especiaria:66,Salgado:14,Madeira:74},
+   notes:'Caramelo, baunilha e um toque de carvalho tostado. Doce, cremoso e versátil — puro ou no old fashioned.',pair:['Barbecue','Caramelo','Baunilha']},
+  {id:'nikkabarrel',name:'Nikka From The Barrel',dist:'Blended Japonês · 51,4%',region:'Japão',color:'linear-gradient(160deg,#8a5a2b,#5f3c1a)',
+   score:4.6,votes:6970,price:'R$ 590',
+   fl:{Defumado:35,Frutado:62,Doce:72,Especiaria:70,Salgado:22,Madeira:76},
+   notes:'Potente e encorpado: frutas em calda, especiarias e carvalho. Muito sabor por um preço justo — cult por bons motivos.',pair:['Chocolate','Frutas secas','Queijo curado']},
+  {id:'monkeyshoulder',name:'Monkey Shoulder',dist:'Blended Malt · 40%',region:'Speyside',color:'linear-gradient(160deg,#c99a3e,#a6791f)',
+   score:4.0,votes:9420,price:'R$ 210',
+   fl:{Defumado:14,Frutado:68,Doce:74,Especiaria:44,Salgado:12,Madeira:50},
+   notes:'Baunilha, laranja e mel numa mistura macia e coquetelável. Feito pra drinks — leve e sem complicação.',pair:['Drinks','Laranja','Gengibre']},
+  {id:'jackdaniels',name:"Jack Daniel's Old No.7",dist:'Tennessee Whiskey · 40%',region:'EUA',color:'linear-gradient(160deg,#3a2a1a,#241a10)',
+   score:3.8,votes:14300,price:'R$ 130',
+   fl:{Defumado:30,Frutado:44,Doce:78,Especiaria:48,Salgado:16,Madeira:60},
+   notes:'Banana, caramelo e o carvão de bordo característico. Docinho e familiar — o clássico do balcão pra qualquer hora.',pair:['Cola','Costela','Nozes']},
+  // ---- whiskeys americanos / irlandês ----
+  {id:'woodford',name:'Woodford Reserve',dist:'Bourbon · 43,2% · Kentucky',region:'EUA',color:'linear-gradient(160deg,#a5561a,#7a3c12)',
+   score:4.2,votes:6800,price:'R$ 209',
+   fl:{Defumado:20,Frutado:52,Doce:78,Especiaria:70,Salgado:12,Madeira:76},
+   notes:'Caramelo, maçã seca e um toque de menta e carvalho tostado. Suave e redondo — bourbon de coquetel refinado.',pair:['Barbecue','Caramelo','Laranja']},
+  {id:'bulleit',name:'Bulleit Bourbon',dist:'Bourbon · 45% · Alto teor de rye',region:'EUA',color:'linear-gradient(160deg,#8a4718,#5f300f)',
+   score:4.1,votes:7200,price:'R$ 188',
+   fl:{Defumado:24,Frutado:44,Doce:66,Especiaria:82,Salgado:12,Madeira:70},
+   notes:'Muito centeio: pimenta, noz-moscada e um final seco e picante. Estruturado e ideal pra drinks fortes.',pair:['Costela','Pimenta','Café']},
+  {id:'jameson',name:'Jameson',dist:'Blended Irlandês · 40%',region:'Irlanda',color:'linear-gradient(160deg,#2f6b3a,#1f4a28)',
+   score:3.9,votes:15600,price:'R$ 150',
+   fl:{Defumado:10,Frutado:60,Doce:70,Especiaria:38,Salgado:12,Madeira:52},
+   notes:'Leve, floral e triplamente destilado: baunilha, maçã verde e mel. Macio e fácil — o irlandês de entrada por excelência.',pair:['Frutas frescas','Gengibre','Mel']},
+  // ---- colecionáveis / leilão ----
+  {id:'pappy23',name:'Pappy Van Winkle 23',dist:'Bourbon · 47,8% · 23 anos',region:'EUA',color:'linear-gradient(160deg,#7a3812,#4a220a)',
+   score:4.8,votes:2100,price:'R$ 27.700',p:27700,
+   fl:{Defumado:26,Frutado:64,Doce:88,Especiaria:60,Salgado:12,Madeira:92},
+   notes:'O unicórnio do bourbon: caramelo profundo, tabaco doce, couro e carvalho antigo. Aveludado e lendário — quase impossível de achar.',pair:['Chocolate','Charuto','Caramelo']},
+  {id:'macallan1926',name:'Macallan 1926',dist:'Single Malt · 40% · 60 anos',region:'Speyside',color:'linear-gradient(160deg,#5a1f0e,#2e0f06)',
+   score:5.0,votes:120,price:'R$ 14 mi',p:14000000,
+   fl:{Defumado:14,Frutado:78,Doce:90,Especiaria:66,Salgado:10,Madeira:98},
+   notes:'A garrafa mais valiosa do mundo. Frutas secas concentradas, xerez antigo, especiarias e madeira infinita. História líquida.',pair:['Chocolate','Nozes','Charuto']},
+  // ---- expansão do catálogo ----
+  {id:'glenlivet12',name:'The Glenlivet 12',dist:'Single Malt · 40% · 12 anos',region:'Speyside',color:'linear-gradient(160deg,#d99a3d,#b5771f)',score:4.1,votes:10400,price:'R$ 280',
+   fl:{Defumado:8,Frutado:80,Doce:64,Especiaria:36,Salgado:10,Madeira:52},
+   notes:'Abacaxi, pera e um toque floral, com final limpo e suave. O single malt clássico e amigável de Speyside.',pair:['Frutas frescas','Queijo brie','Mel']},
+  {id:'glenmorangie10',name:'Glenmorangie Original 10',dist:'Single Malt · 40% · 10 anos',region:'Highlands',color:'linear-gradient(160deg,#e0a94f,#c07f22)',score:4.2,votes:9200,price:'R$ 350',
+   fl:{Defumado:8,Frutado:76,Doce:70,Especiaria:40,Salgado:12,Madeira:58},
+   notes:'Baunilha, pêssego e flor de laranjeira, destilado nos alambiques mais altos da Escócia. Delicado e elegante.',pair:['Frutas frescas','Baunilha','Laranja']},
+  {id:'balvenie12',name:'Balvenie DoubleWood 12',dist:'Single Malt · 40% · 12 anos',region:'Speyside',color:'linear-gradient(160deg,#c98a2e,#8a5a1a)',score:4.4,votes:8100,price:'R$ 640',
+   fl:{Defumado:10,Frutado:66,Doce:78,Especiaria:54,Salgado:10,Madeira:74},
+   notes:'Mel, canela e frutas secas do duplo envelhecimento (bourbon + xerez). Rico, aveludado e cheio de camadas.',pair:['Mel','Nozes','Torta de maçã']},
+  {id:'laphroaig10',name:'Laphroaig 10',dist:'Single Malt · 40% · 10 anos',region:'Islay',color:'linear-gradient(160deg,#2e4034,#1c2a22)',score:4.3,votes:9800,price:'R$ 400',
+   fl:{Defumado:95,Frutado:24,Doce:34,Especiaria:52,Salgado:78,Madeira:46},
+   notes:'Turfa medicinal, iodo e algas — divide opiniões como nenhum outro. Você ama ou odeia, sem meio-termo.',pair:['Ostras','Queijo azul','Bacon']},
+  {id:'highlandpark12',name:'Highland Park 12',dist:'Single Malt · 40% · 12 anos',region:'Ilhas Orkney',color:'linear-gradient(160deg,#8a5a3a,#5f3a22)',score:4.3,votes:7600,price:'R$ 420',
+   fl:{Defumado:52,Frutado:58,Doce:60,Especiaria:56,Salgado:44,Madeira:64},
+   notes:'Mel de urze, fumaça suave e um toque de xerez, das ilhas mais ao norte da Escócia. Equilíbrio perfeito.',pair:['Mel','Carne defumada','Frutas secas']},
+  {id:'oban14',name:'Oban 14',dist:'Single Malt · 43% · 14 anos',region:'Highlands',color:'linear-gradient(160deg,#b5771f,#7a4e14)',score:4.3,votes:6300,price:'R$ 560',
+   fl:{Defumado:44,Frutado:60,Doce:56,Especiaria:50,Salgado:62,Madeira:60},
+   notes:'Laranja, maresia e uma fumaça delicada da pequena destilaria costeira. Ponte entre as Highlands e as ilhas.',pair:['Frutos do mar','Laranja','Carne defumada']},
+  {id:'bowmore12',name:'Bowmore 12',dist:'Single Malt · 40% · 12 anos',region:'Islay',color:'linear-gradient(160deg,#3a5566,#243b47)',score:4.1,votes:6900,price:'R$ 380',
+   fl:{Defumado:72,Frutado:48,Doce:50,Especiaria:46,Salgado:64,Madeira:54},
+   notes:'Fumaça de turfa mais suave, com mel, limão e maresia. Da destilaria mais antiga de Islay, num equilíbrio acessível.',pair:['Frutos do mar','Mel','Chocolate amargo']},
+  {id:'aberlour12',name:'Aberlour 12',dist:'Single Malt · 40% · 12 anos',region:'Speyside',color:'linear-gradient(160deg,#8a3418,#5c2410)',score:4.2,votes:5800,price:'R$ 330',
+   fl:{Defumado:10,Frutado:70,Doce:80,Especiaria:56,Salgado:10,Madeira:72},
+   notes:'Maçã assada, canela e frutas do barril de xerez. Encorpado e reconfortante — um Speyside de inverno.',pair:['Torta de maçã','Nozes','Caramelo']},
+  {id:'redbreast12',name:'Redbreast 12',dist:'Single Pot Still Irlandês · 40% · 12 anos',region:'Irlanda',color:'linear-gradient(160deg,#7a3418,#4a2010)',score:4.5,votes:7200,price:'R$ 560',
+   fl:{Defumado:10,Frutado:72,Doce:66,Especiaria:70,Salgado:12,Madeira:66},
+   notes:'Frutas de Natal, especiarias e corpo cremoso do estilo single pot still. O grande orgulho do whiskey irlandês.',pair:['Frutas secas','Nozes','Chocolate']},
+  {id:'hibiki',name:'Hibiki Harmony',dist:'Blended Japonês · 43%',region:'Japão',color:'linear-gradient(160deg,#c9a24e,#9c722a)',score:4.4,votes:6100,price:'R$ 650',
+   fl:{Defumado:16,Frutado:72,Doce:70,Especiaria:48,Salgado:14,Madeira:64},
+   notes:'Mel, laranja e um toque de sândalo, num blend de harmonia impecável. Elegante como um origami.',pair:['Sushi','Laranja','Mel']},
+  {id:'makersmark',name:"Maker's Mark",dist:'Bourbon de trigo · 45% · Kentucky',region:'EUA',color:'linear-gradient(160deg,#a5451a,#6e2c10)',score:4.1,votes:8700,price:'R$ 185',
+   fl:{Defumado:18,Frutado:48,Doce:82,Especiaria:44,Salgado:12,Madeira:70},
+   notes:'Baunilha, caramelo e um toque de trigo que o deixa extra macio. Com aquele lacre de cera vermelha icônico.',pair:['Caramelo','Barbecue','Baunilha']},
+  {id:'wildturkey101',name:'Wild Turkey 101',dist:'Bourbon · 50,5% · Kentucky',region:'EUA',color:'linear-gradient(160deg,#8a3a12,#5a250c)',score:4.2,votes:7400,price:'R$ 200',
+   fl:{Defumado:26,Frutado:50,Doce:74,Especiaria:82,Salgado:12,Madeira:78},
+   notes:'Potente a 50,5%: baunilha, especiarias e carvalho tostado. Encorpado e perfeito pra drinks fortes.',pair:['Costela','Pimenta','Caramelo']},
+  {id:'jwblack',name:'Johnnie Walker Black',dist:'Blended Escocês · 40% · 12 anos',region:'Escócia',color:'linear-gradient(160deg,#2b2015,#151009)',score:4.0,votes:16800,price:'R$ 180',
+   fl:{Defumado:40,Frutado:56,Doce:60,Especiaria:50,Salgado:24,Madeira:58},
+   notes:'Fumaça leve, frutas escuras e baunilha, misturando dezenas de maltes. O blend premium mais famoso do mundo.',pair:['Carne defumada','Chocolate','Laranja']},
+  {id:'chivas12',name:'Chivas Regal 12',dist:'Blended Escocês · 40% · 12 anos',region:'Escócia',color:'linear-gradient(160deg,#c98a2e,#9a6820)',score:3.9,votes:14200,price:'R$ 170',
+   fl:{Defumado:14,Frutado:66,Doce:70,Especiaria:42,Salgado:12,Madeira:54},
+   notes:'Mel, maçã e baunilha num blend redondo e suave. Clássico acessível pra qualquer ocasião.',pair:['Mel','Frutas frescas','Chocolate']},
+];
+// preço numérico + estilo (badge) derivados
+const BOTTLE_IMAGES={
+  lagavulin16:'assets/bottles/lagavulin16.webp',
+  ardbeg10:'assets/bottles/ardbeg10.webp',
+  macallan12:'assets/bottles/macallan12.webp',
+  glenfiddich12:'assets/bottles/glenfiddich12.webp',
+  talisker10:'assets/bottles/talisker10.webp',
+  yamazaki12:'assets/bottles/yamazaki12.webp',
+  buffalotrace:'assets/bottles/buffalotrace.webp',
+  nikkabarrel:'assets/bottles/nikkabarrel.webp',
+  monkeyshoulder:'assets/bottles/monkeyshoulder.webp',
+  jackdaniels:'assets/bottles/jackdaniels.webp',
+  woodford:'assets/bottles/woodford.webp',
+  bulleit:'assets/bottles/bulleit.webp',
+  jameson:'assets/bottles/jameson.webp',
+  pappy23:'assets/bottles/pappy23.webp',
+  macallan1926:'assets/bottles/macallan1926.webp'
+};
+WHISKIES.forEach(w=>{
+  if(w.p==null) w.p=+String(w.price).replace(/[^\d]/g,'');
+  if(!w.st) w.st = /tennessee/i.test(w.dist)?'Tennessee' : /bourbon/i.test(w.dist)?'Bourbon'
+    : /irland/i.test(w.dist)?'Irlandês' : /japon/i.test(w.dist)?'Japonês'
+    : /blended/i.test(w.dist)?'Blended' : 'Single Malt';
+  w.img=BOTTLE_IMAGES[w.id] || null;
+});
+function tierOf(p){return p>=5000?'Colecionável':p>=800?'Premium':p>=300?'Médio':'Entrada'}
+const HIST={
+  lagavulin16:'Fundada em 1816 na costa sul de Islay, a Lagavulin envelhece seu single malt lentamente à beira-mar. O 16 anos é o carro-chefe e virou sinônimo da fumaça de turfa intensa que define a ilha.',
+  ardbeg10:'Aberta em 1815 em Islay, a Ardbeg quase fechou nos anos 80 e ressurgiu como cult absoluto. O 10 anos é celebrado como um dos whiskies mais turfados e amados do mundo.',
+  macallan12:'Nascida em 1824 em Speyside, a Macallan é lendária pelo uso de barris de xerez espanhóis, que dão cor âmbar e riqueza frutada ao clássico 12 anos Sherry Oak.',
+  glenfiddich12:'Criada em 1886 por William Grant em Dufftown, é a single malt mais vendida do planeta. O 12 anos ajudou a popularizar o próprio conceito de single malt pelo mundo.',
+  talisker10:'Única destilaria da ilha de Skye, fundada em 1830 num litoral batido pelo vento. O 10 anos carrega o caráter marítimo e apimentado que Robert Louis Stevenson chamou de "o rei das bebidas".',
+  yamazaki12:'Primeira destilaria de malte do Japão, aberta em 1923 por Shinjiro Torii perto de Kyoto. O 12 anos colocou o whisky japonês no mapa ao vencer prêmios internacionais.',
+  buffalotrace:'Uma das destilarias mais antigas dos EUA, em Kentucky, com produção desde o século XVIII. Leva o nome das trilhas de búfalos que cruzavam as margens do rio Kentucky.',
+  nikkabarrel:'Da Nikka, fundada por Masataka Taketsuru — o "pai do whisky japonês", que aprendeu o ofício na Escócia. O From The Barrel é um blend potente, engarrafado a 51,4%.',
+  monkeyshoulder:'Blend de maltes da William Grant lançado em 2005. O nome vem do "ombro de macaco", lesão que os maltsters ganhavam de tanto virar a cevada à mão.',
+  jackdaniels:'Fundada por Jack Daniel em 1866 no Tennessee — a mais antiga destilaria registrada dos EUA. Seu segredo é a filtragem no carvão de bordo, o Lincoln County Process.',
+  woodford:'Destilaria em Kentucky com raízes de 1812, revivida pela Brown-Forman em 1996. Bourbon premium famoso por ser o oficial do Kentucky Derby.',
+  bulleit:'Bourbon de alto teor de centeio inspirado numa receita de família do século XIX, de Augustus Bulleit. Relançado por Tom Bulleit em 1987 e hoje um queridinho dos bartenders.',
+  jameson:'Fundada em 1780 em Dublin por John Jameson, é o whiskey irlandês mais vendido do mundo. Triplamente destilado para um perfil suave, leve e fácil de gostar.',
+  pappy23:'O bourbon mais cobiçado do planeta, da família Van Winkle. O 23 anos usa destilados da lendária Stitzel-Weller e é praticamente impossível de achar no varejo.',
+  macallan1926:'Engarrafado a partir do barril 263, com apenas 40 garrafas no mundo. A versão com rótulo de Valerio Adami vendeu por ~US$ 2,7 milhões — a garrafa mais cara já leiloada.',
+  hibiki:'O Hibiki é o blend de assinatura da Suntory, harmonizando maltes de Yamazaki e Hakushu com whisky de grão. Seu nome significa "ressonância" em japonês.',
+  jwblack:'O Johnnie Walker Black nasce da mistura de cerca de 40 maltes e grãos com no mínimo 12 anos. É o blended scotch premium mais vendido do planeta.',
+  chivas12:'O Chivas Regal 12 é um blend suave da casa Chivas Brothers, fundada em Aberdeen em 1801. Um ícone do whisky elegante e acessível.'
+};
+const SHOPS=[{n:'Casa do Whisky',t:'Entrega em todo o Brasil',mult:1.0},{n:'Mercado Livre',t:'Frete grátis acima de R$ 200',mult:1.09},{n:'Empório das Bebidas',t:'Retirada em loja disponível',mult:0.95}];
+function brl(n){return 'R$ '+Math.round(n).toLocaleString('pt-BR')}
+function renderShops(w){
+  const best=byId('shopBest');
+  if(tierOf(w.p)==='Colecionável'){
+    best.textContent='';
+    byId('dShops').innerHTML=`<div class="shop-note">🥃 Peça de colecionador. Disponível apenas via casas de leilão (Sotheby's, Bonhams) e importadores especializados — normalmente sob consulta.</div>`;
+    return;
+  }
+  const list=SHOPS.map(s=>({...s,price:w.p*s.mult})).sort((a,b)=>a.price-b.price);
+  best.textContent='menor: '+brl(list[0].price);
+  byId('dShops').innerHTML=list.map((s,i)=>`
+    <div class="shop ${i===0?'best':''}">
+      <div class="logo">${s.n[0]}</div>
+      <div class="shop-info"><b>${s.n}</b><small>${i===0?'✓ Melhor preço · ':''}${s.t}</small></div>
+      <div class="shop-price"><div class="p">${brl(s.price)}</div></div>
+      <button class="buy" onclick="event.stopPropagation();toast('Abrindo ${s.n}… 🛒')">Comprar</button>
+    </div>`).join('');
+}
+const TIER_COLORS={'Colecionável':'#9a4e17','Premium':'#bf7420','Médio':'#3f5e46','Entrada':'#8a7b64'};
+const TIERS=['Todos','Colecionável','Premium','Médio','Entrada'];
+const RADAR_AXES=['Defumado','Frutado','Doce','Especiaria','Salgado','Madeira'];
+const REGIONS=['Todos','Islay','Speyside','Highlands','Escócia','Japão','EUA','Irlanda','Ilha de Skye','Ilhas Orkney'];
+
+/* mock community reviews (pool reused per whisky) */
+const REVIEW_POOL=[
+  {n:'Rafael M.',loc:'Santos',c:'linear-gradient(135deg,#e0a94f,#bf7420)',rt:5,t:'Fenomenal. Abriu num domingo à noite e não quis mais parar. Vale cada centavo.'},
+  {n:'Juliana T.',loc:'São Paulo',c:'linear-gradient(135deg,#3f5e46,#6c8f74)',rt:4,t:'Equilibrado e fácil de gostar. Recomendei pra três amigos que nem curtiam whisky.'},
+  {n:'Diego P.',loc:'Guarujá',c:'linear-gradient(135deg,#9a4e17,#e0a94f)',rt:5,t:'Um dos meus favoritos da adega. O final persiste por um tempão. Clássico absoluto.'},
+  {n:'Marina C.',loc:'Curitiba',c:'linear-gradient(135deg,#5c4d3b,#8a7b64)',rt:4,t:'Complexo sem ser difícil. Ótimo pra quem tá começando a explorar essa categoria.'},
+  {n:'Bruno A.',loc:'Rio de Janeiro',c:'linear-gradient(135deg,#7a3418,#c98a2e)',rt:5,t:'Comprei pra presentear e acabei comprando outro pra mim. Diz tudo, né?'},
+];
+function reviewsFor(w){const s=w.id.length;return [REVIEW_POOL[s%5],REVIEW_POOL[(s+2)%5],REVIEW_POOL[(s+4)%5]]}
+
+/* ---------------- STATE ---------------- */
+let cellar = JSON.parse(localStorage.getItem('dram_cellar')||'{}'); // {id:{rating}}
+let wishlist = JSON.parse(localStorage.getItem('dram_wish')||'{}'); // {id:true}
+let user = JSON.parse(localStorage.getItem('dram_user')||'null');
+let activeChip='Todos';
+let cellarView='proved';
+let currentId=null;
+const $=s=>document.querySelector(s), byId=id=>document.getElementById(id);
+function save(){localStorage.setItem('dram_cellar',JSON.stringify(cellar))}
+function saveWish(){localStorage.setItem('dram_wish',JSON.stringify(wishlist))}
+function W(id){return WHISKIES.find(w=>w.id===id)}
+function stars(n){return '★★★★★'.slice(0,Math.round(n))+'☆☆☆☆☆'.slice(0,5-Math.round(n))}
+const SVG={
+  chocolate:'<path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/>',
+  queijo:'<path d="M3 16 20 8v6.5a1.5 1.5 0 0 1-1.5 1.5H3z"/><circle cx="9" cy="13.5" r="1"/><circle cx="14.5" cy="12" r="1"/>',
+  charuto:'<path d="M17 12H3a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h14"/><path d="M18 8c0-2.5-2-2.5-2-5"/><path d="M21 16a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M22 8c0-2.5-2-2.5-2-5"/><path d="M7 12v4"/>',
+  ostra:'<path d="M12 4a8 8 0 0 0-8 8c0 3.5 3.5 6.5 8 8 4.5-1.5 8-4.5 8-8a8 8 0 0 0-8-8z"/><path d="M12 4v16M8.5 5 10 19.5M15.5 5 14 19.5"/>',
+  bacon:'<path d="M12 22c6.23-.05 7.87-5.57 7.5-10-.36-4.34-3.95-9.96-7.5-10-3.55.04-7.14 5.66-7.5 10-.37 4.43 1.27 9.95 7.5 10z"/>',
+  cafe:'<path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/>',
+  noz:'<path d="M10.165 6.598C9.954 7.478 9.64 8.36 9 9c-.64.64-1.521.954-2.402 1.165A6 6 0 0 0 8 22c7.732 0 14-6.268 14-14a6 6 0 0 0-11.835-1.402Z"/><path d="M5.341 10.62a4 4 0 1 0 5.279-5.28"/>',
+  torta:'<circle cx="9" cy="7" r="2"/><path d="M7.2 7.9 3 11v9c0 .6.4 1 1 1h16c.6 0 1-.4 1-1v-9c0-2-3-6-7-8l-3.6 2.6"/><path d="M16 13H3"/><path d="M16 17H3"/>',
+  damasco:'<circle cx="12" cy="13.5" r="6.5"/><path d="M12 7.2c1-1.8 3-2 4.3-.9C15.3 8 13.2 8.2 12 7.2z"/>',
+  citrica:'<circle cx="12" cy="12" r="8"/><path d="M12 4v16M4 12h16M6.3 6.3l11.4 11.4M17.7 6.3 6.3 17.7"/>',
+  fresc:'<path d="M2 17a5 5 0 0 0 10 0c0-2.76-2.5-5-5-3-2.5-2-5 .24-5 3Z"/><path d="M12 17a5 5 0 0 0 10 0c0-2.76-2.5-5-5-3-2.5-2-5 .24-5 3Z"/><path d="M7 14c3.22-2.91 4.29-8.75 5-12 1.66 2.38 4.94 9 5 12"/><path d="M22 9c-4.29 0-7.14-2.33-10-7 5.71 0 10 4.67 10 7Z"/>',
+  seca:'<path d="M22 5V2l-5.89 5.89"/><circle cx="16.6" cy="15.89" r="3"/><circle cx="8.11" cy="7.4" r="3"/><circle cx="12.35" cy="11.65" r="3"/><circle cx="13.91" cy="5.85" r="3"/><circle cx="18.15" cy="10.09" r="3"/><circle cx="6.56" cy="13.2" r="3"/><circle cx="10.8" cy="17.44" r="3"/><circle cx="5" cy="19" r="3"/>',
+  mel:'<rect x="6" y="9" width="12" height="11" rx="2"/><path d="M6 6h12v3H6z"/><path d="M12 13v3"/>',
+  frutosdomar:'<path d="M3 12c3-4 8-4.5 12-1.5 1.3.9 2.7.9 4.5-1.5-.4 3-.4 5 0 8-1.8-2.4-3.2-2.4-4.5-1.5C11 18.5 6 18 3 12z"/><circle cx="7" cy="11" r=".7"/>',
+  carne:'<circle cx="12.5" cy="8.5" r="2.5"/><path d="M12.5 2a6.5 6.5 0 0 0-6.22 4.6c-1.1 3.13-.78 3.9-3.18 6.08A3 3 0 0 0 5 18c4 0 8.4-1.8 11.4-4.3A6.5 6.5 0 0 0 12.5 2Z"/><path d="m18.5 6 2.19 4.5a6.48 6.48 0 0 1 .31 2 6.49 6.49 0 0 1-2.6 5.2C15.4 20.2 11 22 7 22a3 3 0 0 1-2.68-1.66L2.4 16.5"/>',
+  pimenta:'<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+  gengibre:'<path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8Z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2Z"/>',
+  cha:'<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
+  caramelo:'<path d="m9.5 7.5-2 2a4.95 4.95 0 1 0 7 7l2-2a4.95 4.95 0 1 0-7-7Z"/><path d="M14 6.5v10"/><path d="M10 7.5v10"/><path d="m16 7 1-5 1.37.68A3 3 0 0 0 19.7 3H21v1.3c0 .46.1.92.32 1.33L22 7l-5 1"/><path d="m8 17-1 5-1.37-.68A3 3 0 0 0 4.3 21H3v-1.3a3 3 0 0 0-.32-1.33L2 17l5-1"/>',
+  baunilha:'<path d="m7 11 4.08 10.35a1 1 0 0 0 1.84 0L17 11"/><path d="M17 7A5 5 0 0 0 7 7"/><path d="M17 7a2 2 0 0 1 0 4H7a2 2 0 0 1 0-4"/>',
+  drink:'<path d="M8 22h8"/><path d="M12 11v11"/><path d="m19 3-7 8-7-8Z"/>',
+  cola:'<path d="m6 8 1.75 12.28a2 2 0 0 0 2 1.72h4.54a2 2 0 0 0 2-1.72L18 8"/><path d="M5 8h14"/><path d="M7 15a6.47 6.47 0 0 1 5 0 6.47 6.47 0 0 0 5 0"/><path d="m12 8-1-6"/>',
+  laranja:'<circle cx="12" cy="13" r="7"/><path d="M12 6c1-1.4 3-1.2 4 0-1 1.4-3 1.2-4 0z"/>',
+  fruta:'<path d="M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.91 4.91 0 0 0 17 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 0 0-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06Z"/><path d="M10 2c1 .5 2 2 2 5"/>',
+  plate:'<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>'
+};
+function svgIco(k){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${SVG[k]||SVG.plate}</svg>`}
+function pairNote(p){
+  const s=p.toLowerCase();const m=[
+    ['chocolate','Sobremesa'],['queijo','Tábua de frios'],['charuto','Pós-jantar'],['ostra','Frutos do mar'],
+    ['bacon','Brunch'],['café','Sobremesa'],['noz','Petisco'],['torta','Sobremesa'],['damasco','Frutas secas'],
+    ['cítric','Cítrico'],['fresc','Frutas frescas'],['seca','Frutas secas'],['mel','Doce'],['frutos do mar','Frutos do mar'],
+    ['carne','Churrasco'],['costela','Churrasco'],['barbecue','Churrasco'],['pimenta','Apimentado'],['gengibre','Especiaria'],
+    ['chá','Leve'],['caramelo','Doce'],['baunilha','Sobremesa'],['drink','Coquetel'],['cola','Refrescante'],
+    ['laranja','Cítrico'],['sushi','Japonês']
+  ];for(const[k,v]of m)if(s.includes(k))return v;return 'Harmoniza';
+}
+function pairIcon(p){
+  const s=p.toLowerCase();
+  const map=[
+    ['chocolate','chocolate'],['queijo','queijo'],['charuto','charuto'],['ostra','ostra'],['bacon','bacon'],
+    ['café','cafe'],['noz','noz'],['torta','torta'],['damasco','damasco'],['cítric','citrica'],
+    ['fresc','fresc'],['seca','seca'],['mel','mel'],['frutos do mar','frutosdomar'],['carne','carne'],
+    ['costela','carne'],['barbecue','carne'],['pimenta','pimenta'],['gengibre','gengibre'],['chá','cha'],
+    ['caramelo','caramelo'],['baunilha','baunilha'],['drink','drink'],['cola','cola'],['laranja','laranja'],
+    ['sushi','frutosdomar'],['fruta','fruta']
+  ];
+  for(const [k,ic] of map) if(s.includes(k)) return svgIco(ic);
+  return svgIco('plate');
+}
+
+/* ---------------- CHIPS + LIST ---------------- */
+function renderChips(){
+  byId('chips').innerHTML=REGIONS.map(r=>`<button class="chip ${r===activeChip?'on':''}" onclick="setChip('${r}')">${r}</button>`).join('');
+}
+function setChip(r){activeChip=r;renderChips();renderList()}
+function bottleHTML(w,cls='bottle'){
+  if(w.img) return `<div class="${cls} bottle-photo" style="--bottle-bg:${w.color}"><img src="${w.img}" alt="" loading="lazy" aria-hidden="true"></div>`;
+  return `<div class="${cls}" style="background:${w.color}"></div>`;
+}
+function cardHTML(w){
+  return `<div class="w-card" onclick="openDetail('${w.id}')">
+    ${bottleHTML(w)}
+    <div class="w-info">
+      <h4>${w.name}</h4>
+      <div class="m">${w.dist}</div>
+      <span class="rg">◉ ${w.region}</span>
+    </div>
+    <div class="w-score">
+      <div class="n">${w.score.toFixed(1)}</div>
+      <div class="st">${stars(w.score)}</div>
+      <div class="v">${(w.votes/1000).toFixed(1)}k</div>
+    </div>
+  </div>`;
+}
+function renderList(){
+  const q=(byId('q').value||'').toLowerCase();
+  const items=WHISKIES.filter(w=>{
+    const okR=activeChip==='Todos'||w.region===activeChip;
+    const okQ=!q||w.name.toLowerCase().includes(q)||w.region.toLowerCase().includes(q)||w.dist.toLowerCase().includes(q);
+    return okR&&okQ;
+  }).sort((a,b)=>b.score-a.score);
+  byId('list').innerHTML=items.length?items.map(cardHTML).join(''):
+    `<div class="empty"><div class="em">🔍</div><h3>Nada por aqui</h3><p>Tenta outra busca ou região.</p></div>`;
+}
+
+/* ---------------- FEED (amigos) ---------------- */
+const FEED=[
+  {u:'Juliana T.',c:'linear-gradient(135deg,#3f5e46,#6c8f74)',act:'avaliou',id:'lagavulin16',rt:5,tm:'há 12 min',likes:8,cmts:2,txt:'Que fumaça, meu Deus. Já é o melhor da minha adega.'},
+  {u:'Diego P.',c:'linear-gradient(135deg,#9a4e17,#e0a94f)',act:'adicionou à adega',id:'yamazaki12',tm:'há 1 h',likes:5,cmts:0},
+  {u:'Rafael M.',c:'linear-gradient(135deg,#e0a94f,#bf7420)',act:'quer provar',id:'macallan12',tm:'há 3 h',likes:3,cmts:1},
+  {u:'Marina C.',c:'linear-gradient(135deg,#5c4d3b,#8a7b64)',act:'avaliou',id:'talisker10',rt:4,tm:'há 5 h',likes:12,cmts:4,txt:'Aquele salgado apimentado no final é viciante.'},
+  {u:'Bruno A.',c:'linear-gradient(135deg,#7a3418,#c98a2e)',act:'avaliou',id:'buffalotrace',rt:4,tm:'ontem',likes:6,cmts:1,txt:'Melhor custo-benefício em bourbon, disparado.'},
+  {u:'Diego P.',c:'linear-gradient(135deg,#9a4e17,#e0a94f)',act:'adicionou à adega',id:'ardbeg10',tm:'ontem',likes:9,cmts:2},
+];
+let liked={};
+function renderFeed(){
+  byId('feedList').innerHTML=FEED.map((f,i)=>{
+    const w=W(f.id);const isLiked=liked[i];
+    return `<div class="feed">
+      <div class="feed-top">
+        <div class="feed-av" style="background:${f.c}">${f.u[0]}</div>
+        <div class="feed-who"><span><b>${f.u}</b> <span class="act">${f.act}</span></span><div class="tm">${f.tm}</div></div>
+        ${f.rt?`<div class="feed-rt">${stars(f.rt)}</div>`:''}
+      </div>
+      ${f.txt?`<div class="feed-txt">“${f.txt}”</div>`:''}
+      <div class="feed-w" onclick="openDetail('${f.id}')">
+        ${bottleHTML(w)}
+        <b>${w.name}</b><span class="sc">★ ${w.score.toFixed(1)}</span>
+      </div>
+      <div class="feed-actions">
+        <span class="${isLiked?'liked':''}" onclick="likeFeed(${i},this)">${isLiked?'♥':'♡'} ${f.likes+(isLiked?1:0)}</span>
+        <span onclick="toast('Comentários em breve 💬')">💬 ${f.cmts}</span>
+        <span onclick="shareW()">↗ Compartilhar</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+function likeFeed(i,el){liked[i]=!liked[i];renderFeed()}
+function setDiscover(v,btn){
+  document.querySelectorAll('#discover .seg button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+  byId('forYou').style.display=v==='forYou'?'':'none';
+  byId('friends').style.display=v==='friends'?'':'none';
+  if(v==='friends')renderFeed();
+}
+
+/* ---------------- DESTILARIA ---------------- */
+const DISTILLERIES={
+  lagavulin:{name:'Lagavulin',crest:'linear-gradient(135deg,#3f5e46,#2e4534)',founded:1816,region:'Islay',country:'Escócia',story:'À beira-mar no sul de Islay desde 1816, a Lagavulin faz uma destilação lenta e paciente. É uma das lendárias "Kildalton", o trio de destilarias que definem o estilo turfado e marítimo da ilha.'},
+  ardbeg:{name:'Ardbeg',crest:'linear-gradient(135deg,#2c3b30,#1e2a22)',founded:1815,region:'Islay',country:'Escócia',story:'Fundada em 1815 em Islay, sobreviveu a fechamentos e quase-falências para virar uma das marcas mais cultuadas do mundo — sinônimo de turfa extrema e de uma legião de fãs devotos.'},
+  macallan:{name:'The Macallan',crest:'linear-gradient(135deg,#7a3418,#5c2410)',founded:1824,region:'Speyside',country:'Escócia',story:'Em Speyside desde 1824, a The Macallan construiu sua fama sobre barris de xerez espanhóis e uma obsessão pela madeira. Hoje é a destilaria mais valiosa nos leilões de whisky do planeta.'},
+  glenfiddich:{name:'Glenfiddich',crest:'linear-gradient(135deg,#c98a2e,#a56a1c)',founded:1886,region:'Speyside',country:'Escócia',story:'Fundada em 1886 por William Grant em Dufftown, é a single malt mais vendida do mundo e segue nas mãos da família fundadora. Seu nome significa "vale dos cervos" em gaélico.'},
+  talisker:{name:'Talisker',crest:'linear-gradient(135deg,#3a5566,#26404e)',founded:1830,region:'Ilha de Skye',country:'Escócia',story:'A destilaria mais antiga da ilha de Skye, fundada em 1830 num litoral castigado pelo mar. Seu whisky carrega o sal, a pimenta e a fumaça da paisagem selvagem que a cerca.'},
+  suntory:{name:'Suntory Yamazaki',crest:'linear-gradient(135deg,#c0913f,#9c6f22)',founded:1923,region:'Yamazaki',country:'Japão',story:'A Suntory ergueu a Yamazaki em 1923 perto de Kyoto, na confluência de três rios — a primeira destilaria de malte do Japão. Iniciou a tradição que hoje rivaliza de igual pra igual com a Escócia.'},
+  buffalotrace:{name:'Buffalo Trace',crest:'linear-gradient(135deg,#b5621a,#8a4512)',founded:1773,region:'Kentucky',country:'EUA',story:'Às margens do rio Kentucky, destila bourbon desde o fim do século XVIII, atravessando até a Lei Seca com licença medicinal. É uma referência absoluta do bourbon americano.'},
+  nikka:{name:'Nikka',crest:'linear-gradient(135deg,#8a5a2b,#5f3c1a)',founded:1934,region:'Hokkaido',country:'Japão',story:'Criada em 1934 por Masataka Taketsuru, que aprendeu o ofício na Escócia e trouxe o método para o Japão. Suas destilarias Yoichi e Miyagikyo são pilares do whisky japonês.'},
+  williamgrant:{name:'William Grant & Sons',crest:'linear-gradient(135deg,#c99a3e,#a6791f)',founded:1887,region:'Speyside',country:'Escócia',story:'Fundada em 1887, é uma das grandes casas independentes da Escócia. O Monkey Shoulder é seu blend de maltes pensado para drinks e para quem está começando no whisky.'},
+  jackdaniels:{name:"Jack Daniel's",crest:'linear-gradient(135deg,#3a2a1a,#241a10)',founded:1866,region:'Tennessee',country:'EUA',story:'Em Lynchburg, Tennessee, desde 1866 — a destilaria registrada mais antiga dos EUA. O filtro no carvão de bordo (Lincoln County Process) é o que separa o Tennessee whiskey do bourbon.'},
+  woodford:{name:'Woodford Reserve',crest:'linear-gradient(135deg,#a5561a,#7a3c12)',founded:1812,region:'Kentucky',country:'EUA',story:'Em Versailles, Kentucky, com raízes de 1812 e revivida pela Brown-Forman em 1996. Usa alambiques de cobre escoceses e é o bourbon oficial do Kentucky Derby.'},
+  bulleit:{name:'Bulleit',crest:'linear-gradient(135deg,#8a4718,#5f300f)',founded:1987,region:'Kentucky',country:'EUA',story:'Marca de Kentucky que revive uma receita de família dos anos 1830, com alto teor de centeio. Relançada por Tom Bulleit em 1987, virou queridinha da coquetelaria moderna.'},
+  jameson:{name:'Jameson',crest:'linear-gradient(135deg,#2f6b3a,#1f4a28)',founded:1780,region:'Dublin',country:'Irlanda',story:'Fundada em 1780 por John Jameson em Dublin e hoje destilada em Midleton, é o whiskey irlandês mais vendido do mundo. A tripla destilação define sua leveza característica.'},
+  vanwinkle:{name:'Old Rip Van Winkle',crest:'linear-gradient(135deg,#7a3812,#4a220a)',founded:1893,region:'Kentucky',country:'EUA',story:'A família Van Winkle produz o bourbon mais cobiçado do planeta há mais de um século. Suas garrafas antigas usam destilado da lendária e já extinta destilaria Stitzel-Weller.'},
+  glenlivet:{name:'The Glenlivet',crest:'linear-gradient(135deg,#d99a3d,#b5771f)',founded:1824,region:'Speyside',country:'Escócia',story:'Fundada em 1824, foi a primeira destilaria legalizada de Speyside e ajudou a definir o estilo suave e frutado da região. Hoje é uma das single malts mais vendidas do mundo.'},
+  glenmorangie:{name:'Glenmorangie',crest:'linear-gradient(135deg,#e0a94f,#c07f22)',founded:1843,region:'Highlands',country:'Escócia',story:'Nas Highlands do norte desde 1843, tem os alambiques mais altos da Escócia — o que garante um destilado leve e floral. Pioneira no acabamento em barris diferentes.'},
+  balvenie:{name:'The Balvenie',crest:'linear-gradient(135deg,#c98a2e,#8a5a1a)',founded:1892,region:'Speyside',country:'Escócia',story:'Vizinha da Glenfiddich em Dufftown, mantém tradições raras: cultiva a própria cevada e ainda tem um mestre tanoeiro. O DoubleWood consagrou o duplo envelhecimento.'},
+  laphroaig:{name:'Laphroaig',crest:'linear-gradient(135deg,#2e4034,#1c2a22)',founded:1815,region:'Islay',country:'Escócia',story:'Em Islay desde 1815, é a mais medicinal e turfada das destilarias — dizem que era vendida como "remédio" durante a Lei Seca. Ama-se ou odeia-se.'},
+  highlandpark:{name:'Highland Park',crest:'linear-gradient(135deg,#8a5a3a,#5f3a22)',founded:1798,region:'Ilhas Orkney',country:'Escócia',story:'A destilaria mais ao norte da Escócia, nas ilhas Orkney desde 1798. Usa turfa local de urze, criando um equilíbrio único entre fumaça, mel e xerez.'},
+  oban:{name:'Oban',crest:'linear-gradient(135deg,#b5771f,#7a4e14)',founded:1794,region:'Highlands',country:'Escócia',story:'Uma das menores e mais antigas destilarias da Escócia (1794), encravada numa cidade portuária. Faz a ponte entre o frutado das Highlands e o sal das ilhas.'},
+  bowmore:{name:'Bowmore',crest:'linear-gradient(135deg,#3a5566,#243b47)',founded:1779,region:'Islay',country:'Escócia',story:'A destilaria mais antiga de Islay, fundada em 1779. Seu icônico armazém "No.1 Vaults" fica abaixo do nível do mar, dando um caráter marítimo e uma fumaça equilibrada.'},
+  aberlour:{name:'Aberlour',crest:'linear-gradient(135deg,#8a3418,#5c2410)',founded:1879,region:'Speyside',country:'Escócia',story:'Em Speyside desde 1879, aos pés da montanha Ben Rinnes. É especialista em barris de xerez, que dão ao whisky um caráter frutado, encorpado e reconfortante.'},
+  redbreast:{name:'Midleton (Redbreast)',crest:'linear-gradient(135deg,#7a3418,#4a2010)',founded:1825,region:'Cork',country:'Irlanda',story:'Produzido na destilaria Midleton, no condado de Cork, o Redbreast é o maior nome do estilo single pot still — a assinatura cremosa e apimentada do whiskey irlandês.'},
+  makersmark:{name:"Maker's Mark",crest:'linear-gradient(135deg,#a5451a,#6e2c10)',founded:1953,region:'Kentucky',country:'EUA',story:'Em Loretto, Kentucky, faz um bourbon "de trigo" (em vez de centeio), mais macio e adocicado. Cada garrafa é mergulhada à mão naquele lacre de cera vermelha.'},
+  wildturkey:{name:'Wild Turkey',crest:'linear-gradient(135deg,#8a3a12,#5a250c)',founded:1869,region:'Kentucky',country:'EUA',story:'Em Lawrenceburg, Kentucky, desde 1869. Famosa pelos bourbons encorpados e de alto teor, sob o comando lendário da família Russell por gerações.'},
+};
+function distSlug(w){const n=w.name.toLowerCase();
+  if(n.includes('lagavulin'))return'lagavulin';if(n.includes('ardbeg'))return'ardbeg';
+  if(n.includes('macallan'))return'macallan';if(n.includes('glenfiddich'))return'glenfiddich';
+  if(n.includes('talisker'))return'talisker';if(n.includes('yamazaki'))return'suntory';
+  if(n.includes('buffalo'))return'buffalotrace';if(n.includes('nikka'))return'nikka';
+  if(n.includes('monkey'))return'williamgrant';if(n.includes('jack'))return'jackdaniels';
+  if(n.includes('woodford'))return'woodford';if(n.includes('bulleit'))return'bulleit';
+  if(n.includes('jameson'))return'jameson';if(n.includes('pappy'))return'vanwinkle';
+  if(n.includes('glenlivet'))return'glenlivet';if(n.includes('glenmorangie'))return'glenmorangie';
+  if(n.includes('balvenie'))return'balvenie';if(n.includes('laphroaig'))return'laphroaig';
+  if(n.includes('highland park'))return'highlandpark';if(n.includes('oban'))return'oban';
+  if(n.includes('bowmore'))return'bowmore';if(n.includes('aberlour'))return'aberlour';
+  if(n.includes('redbreast'))return'redbreast';if(n.includes('maker'))return'makersmark';
+  if(n.includes('wild turkey'))return'wildturkey';
+  return null;
+}
+function openDistilleryFromCurrent(){const slug=distSlug(W(currentId));if(slug)openDistillery(slug)}
+function openDistillery(slug){
+  const d=DISTILLERIES[slug];if(!d)return;
+  byId('distCrest').textContent=d.name[0];byId('distCrest').style.background=d.crest;
+  byId('distHero').style.background=`linear-gradient(180deg,var(--amber-soft),var(--paper))`;
+  byId('distName').textContent=d.name;
+  byId('distMeta').textContent=`${d.region} · ${d.country}`;
+  byId('distFounded').textContent=d.founded;
+  byId('distRegion').textContent=d.region.split(' ')[0];
+  byId('distCountry').textContent=d.country;
+  byId('distStory').textContent=d.story;
+  const bottles=WHISKIES.filter(w=>distSlug(w)===slug).sort((a,b)=>b.p-a.p);
+  byId('distBottles').innerHTML=bottles.map(w=>`<div class="w-card" onclick="closeDistillery();openDetail('${w.id}')">
+    ${bottleHTML(w)}
+    <div class="w-info"><h4>${w.name}</h4><div class="m">${w.dist.split('·')[0].trim()} · ${w.price}</div></div>
+    <div class="w-score"><div class="n">${w.score.toFixed(1)}</div><div class="st">${stars(w.score)}</div></div>
+  </div>`).join('');
+  byId('distillery').scrollTop=0;byId('distillery').classList.add('open');
+}
+function closeDistillery(){byId('distillery').classList.remove('open')}
+
+/* ---------------- COMPARAR ---------------- */
+let cmp=[null,null], pickTarget=0;
+function openCompare(){renderCompare();byId('compare').classList.add('open')}
+function closeCompare(){byId('compare').classList.remove('open')}
+function pickCompare(i){pickTarget=i;
+  byId('pickerList').innerHTML=WHISKIES.map(w=>`<div class="w-card" onclick="selectCompare('${w.id}')">
+    ${bottleHTML(w)}
+    <div class="w-info"><h4>${w.name}</h4><div class="m">${w.region} · ${w.price}</div></div>
+    <div class="w-score"><div class="n">${w.score.toFixed(1)}</div></div></div>`).join('');
+  byId('cmpPicker').classList.add('open');
+}
+function closePicker(){byId('cmpPicker').classList.remove('open')}
+function selectCompare(id){cmp[pickTarget]=id;closePicker();renderCompare()}
+function slotHTML(id){
+  if(!id)return '<span style="font-size:26px">+</span><span>Escolher</span>';
+  const w=W(id);return `${bottleHTML(w)}<b>${w.name}</b>`;
+}
+function renderCompare(){
+  byId('cmpSlot0').className='cmp-slot'+(cmp[0]?' filled':'');byId('cmpSlot0').innerHTML=slotHTML(cmp[0]);
+  byId('cmpSlot1').className='cmp-slot'+(cmp[1]?' filled':'');byId('cmpSlot1').innerHTML=slotHTML(cmp[1]);
+  const res=byId('cmpResult');
+  if(!cmp[0]||!cmp[1]){res.innerHTML=`<div class="cmp-empty">Escolha dois whiskies acima pra ver a comparação de sabor, nota e preço. 🥃</div>`;return}
+  const a=W(cmp[0]),b=W(cmp[1]);
+  let html='<div class="cmp-box">';
+  html+=infoRow('Nota',a.score.toFixed(1),b.score.toFixed(1),a.score>b.score?'a':b.score>a.score?'b':'');
+  html+=infoRow('Preço',a.price,b.price,a.p<b.p?'a':b.p<a.p?'b':'');
+  html+=infoRow('Estilo',a.st,b.st,'');
+  html+=infoRow('Região',a.region,b.region,'');
+  html+='</div>';
+  html+=`<div class="cmp-sec">Perfil de sabor</div>`;
+  RADAR_AXES.forEach(ax=>{
+    const va=a.fl[ax],vb=b.fl[ax];
+    html+=`<div class="cmp-frow"><div class="fl">${ax}</div><div class="cmp-vals">
+      <div class="v ${va>vb?'win':''}">${va}</div>
+      <div class="cmp-bar l"><i style="width:${va}%"></i></div>
+      <div class="cmp-bar"><i style="width:${vb}%"></i></div>
+      <div class="v ${vb>va?'win':''}">${vb}</div></div></div>`;
+  });
+  // veredito
+  const bits=[];
+  if(a.score!==b.score)bits.push(`<b>${(a.score>b.score?a:b).name}</b> tem nota maior`);
+  if(a.p!==b.p)bits.push(`<b>${(a.p<b.p?a:b).name}</b> é mais barato`);
+  const sa=a.fl.Defumado,sb=b.fl.Defumado;
+  if(sa!==sb)bits.push(`<b>${(sa>sb?a:b).name}</b> é mais defumado`);
+  html+=`<div class="cmp-verdict" style="margin-top:18px">🥃 ${bits.join(' · ')}.</div>`;
+  res.innerHTML=html;
+}
+function infoRow(label,va,vb,better){
+  return `<div class="cmp-irow">
+    <div class="ci-v l ${better==='a'?'win':''}">${va}</div>
+    <div class="ci-l">${label}</div>
+    <div class="ci-v r ${better==='b'?'win':''}">${vb}</div></div>`;
+}
+
+/* ---------------- DRINKS ---------------- */
+const COCKTAILS={
+  oldfashioned:{name:'Old Fashioned',e:'🥃',ing:'2 doses de bourbon · 1 cubo de açúcar · 2 gotas de angostura',m:'Macere o açúcar com a angostura, adicione gelo e o whisky, mexa e decore com casca de laranja.'},
+  whiskysour:{name:'Whisky Sour',e:'🍋',ing:'2 doses · 1 dose de limão · ½ dose de xarope · clara de ovo (opcional)',m:'Bata tudo com gelo na coqueteleira e coe numa taça gelada.'},
+  manhattan:{name:'Manhattan',e:'🍒',ing:'2 doses de bourbon · 1 dose de vermute tinto · angostura',m:'Mexa com gelo, coe numa taça e finalize com uma cereja.'},
+  penicillin:{name:'Penicillin',e:'🍯',ing:'2 doses de scotch · limão · mel · gengibre · fio de turfado',m:'Bata com gelo, coe e flutue o whisky turfado por cima.'},
+  robroy:{name:'Rob Roy',e:'🥃',ing:'2 doses de scotch · 1 dose de vermute tinto · angostura',m:'Mexa com gelo e coe numa taça. É o "Manhattan escocês".'},
+  highball:{name:'Highball',e:'🥤',ing:'1 dose de whisky japonês · água com gás bem gelada · gelo',m:'Copo alto cheio de gelo, whisky e complete com a soda. Simples e refrescante.'},
+  irishcoffee:{name:'Irish Coffee',e:'☕',ing:'1 dose de irlandês · café quente · açúcar · creme por cima',m:'Misture café, açúcar e whiskey; finalize com uma camada de creme.'},
+  neat:{name:'Puro ou com uma pedra',e:'❄️',ing:'1 dose · copo baixo · gelo opcional',m:'Pra maltes complexos, prove puro ou com uma pedra pra abrir os aromas.'},
+  rustynail:{name:'Rusty Nail',e:'🥃',ing:'2 doses de scotch · 1 dose de Drambuie',m:'Sobre gelo, mexa e sirva. Doce e direto ao ponto.'},
+};
+function cocktailsFor(w){
+  const st=w.st, smoky=w.fl.Defumado>60;
+  if(st==='Bourbon')return['oldfashioned','whiskysour','manhattan'];
+  if(st==='Tennessee')return['whiskysour','oldfashioned','manhattan'];
+  if(st==='Irlandês')return['irishcoffee','whiskysour','highball'];
+  if(st==='Japonês')return['highball','whiskysour','neat'];
+  if(smoky)return['penicillin','neat','robroy'];
+  return['neat','robroy','rustynail'];
+}
+function renderDrinks(w){
+  byId('dDrinks').innerHTML=cocktailsFor(w).map(k=>{const c=COCKTAILS[k];
+    return `<div class="drink"><div class="drink-top"><span class="de">${c.e}</span><b>${c.name}</b></div>
+      <div class="drink-ing">${c.ing}</div><div class="drink-m">${c.m}</div></div>`;
+  }).join('');
+  setTimeout(()=>updateArrows(byId('dDrinks')),30);
+}
+
+/* ---------------- APRENDER ---------------- */
+const LEARN_TYPES=[
+  ['Single Malt','Malte de cevada de uma única destilaria. Complexo e cheio de caráter — o "vinho fino" do whisky.'],
+  ['Blended','Mistura de maltes com whisky de grão. Mais leve e acessível; a maioria das marcas famosas.'],
+  ['Bourbon','Americano, mín. 51% de milho, barril de carvalho novo tostado. Doce, com baunilha e caramelo.'],
+  ['Rye','Feito de centeio. Mais seco e apimentado que o bourbon — favorito da coquetelaria.'],
+  ['Tennessee','Como o bourbon, mas filtrado no carvão de bordo. Suave e adocicado (ex.: Jack Daniel\'s).'],
+  ['Irlandês','Geralmente triplamente destilado. Leve, suave e fácil de beber.'],
+  ['Japonês','Inspirado na Escócia, com precisão e elegância. Delicado e muito bem equilibrado.'],
+];
+const GLOSSARY=[
+  ['Turfa (peat)','Musgo queimado pra secar a cevada. Dá aquela fumaça defumada, típica de Islay.'],
+  ['Cask / Barril','A madeira onde envelhece. Ex-bourbon dá baunilha; ex-xerez dá frutas e cor escura.'],
+  ['ABV','Teor alcoólico (% de álcool). A maioria fica entre 40% e 46%; "cask strength" passa de 50%.'],
+  ['Angel\'s Share','A parte que evapora do barril a cada ano. Os "anjos" ficam com ~2% ao ano.'],
+  ['NAS','"No Age Statement" — sem idade no rótulo. Não é ruim: é uma mistura de várias idades.'],
+  ['Finish','O gosto que permanece depois do gole. Pode ser curto, médio ou longo.'],
+  ['Single Cask','Engarrafado de um único barril, sem mistura. Raro e único a cada lote.'],
+  ['Dram','Uma dose de whisky. Também é o nome deste app. 😉'],
+];
+function renderLearn(){
+  byId('learnTypes').innerHTML=LEARN_TYPES.map(([t,d])=>`<div class="ltype"><b>${t}</b><p>${d}</p></div>`).join('');
+  byId('learnGloss').innerHTML=GLOSSARY.map(([t,d])=>`<details class="gloss"><summary>${t}</summary><p>${d}</p></details>`).join('');
+}
+function openLearn(){byId('learn').scrollTop=0;byId('learn').classList.add('open')}
+function closeLearn(){byId('learn').classList.remove('open')}
+
+/* ---------------- CONQUISTAS ---------------- */
+const BADGES=[
+  {name:'Primeiro gole',e:'🥃',check:s=>s.count>=1},
+  {name:'Explorador',e:'🧭',check:s=>s.count>=3},
+  {name:'Crítico',e:'⭐',check:s=>s.rated>=3},
+  {name:'Amante da turfa',e:'🔥',check:s=>s.smoky},
+  {name:'Trotamundos',e:'🗺️',check:s=>s.regions>=3},
+  {name:'Colecionador',e:'💎',check:s=>s.collectible},
+  {name:'Sonhador',e:'♥',check:s=>s.wish>=3},
+  {name:'Mestre da adega',e:'👑',check:s=>s.count>=9},
+];
+function renderBadges(){
+  const ids=Object.keys(cellar);
+  const s={
+    count:ids.length,
+    rated:ids.filter(id=>cellar[id].rating).length,
+    smoky:ids.some(id=>W(id).fl.Defumado>60),
+    regions:new Set(ids.map(id=>W(id).region)).size,
+    collectible:ids.some(id=>tierOf(W(id).p)==='Colecionável'),
+    wish:Object.keys(wishlist).length,
+  };
+  const unlocked=BADGES.filter(b=>b.check(s)).length;
+  byId('badgeCount').textContent=`${unlocked}/${BADGES.length}`;
+  byId('badgesGrid').innerHTML=BADGES.map(b=>{const on=b.check(s);
+    return `<div class="bdg ${on?'on':''}"><div class="em">${b.e}${on?'':'<span class="lock">🔒</span>'}</div><small>${b.name}</small></div>`;
+  }).join('');
+}
+
+/* ---------------- RANKING ---------------- */
+let tierFilter='Todos';
+function renderTierChips(){
+  byId('tierChips').innerHTML=TIERS.map(t=>`<button class="chip ${t===tierFilter?'on':''}" onclick="setTier('${t}')">${t}</button>`).join('');
+}
+function setTier(t){tierFilter=t;renderTierChips();renderRanking()}
+function renderRanking(){
+  const items=WHISKIES.filter(w=>tierFilter==='Todos'||tierOf(w.p)===tierFilter).sort((a,b)=>b.p-a.p);
+  byId('rankSub').textContent=tierFilter==='Todos'?`Do colecionável ao dia a dia — ${items.length} whiskies`:`${items.length} na faixa "${tierFilter}"`;
+  byId('rankList').innerHTML=items.map((w,i)=>{
+    const tier=tierOf(w.p);
+    return `<div class="rank-card ${i<3?'top':''}" onclick="openDetail('${w.id}')">
+      <div class="rank-n">${i+1}</div>
+      ${bottleHTML(w)}
+      <div class="rank-info">
+        <h4>${w.name}</h4>
+        <div class="rank-badges">
+          <span class="badge badge-style">${w.st}</span>
+          <span class="badge badge-tier" style="background:${TIER_COLORS[tier]}">${tier}</span>
+        </div>
+      </div>
+      <div class="rank-price"><div class="p">${w.price}</div><div class="st">★ ${w.score.toFixed(1)}</div></div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------------- DETAIL ---------------- */
+function openDetail(id){
+  currentId=id;const w=W(id);
+  byId('dName').textContent=w.name;
+  byId('dMeta').textContent=w.dist;
+  byId('dRegion').textContent='◉ '+w.region;
+  byId('dScore').textContent=w.score.toFixed(1);
+  byId('dVotes').textContent=(w.votes/1000).toFixed(1)+'k';
+  byId('dPrice').textContent=w.price;
+  const db=byId('dBottle');
+  if(w.img){db.classList.add('bottle-photo');db.style.setProperty('--bottle-bg',w.color);byId('dBottleImg').src=w.img;byId('dBottleImg').style.display='';}
+  else{db.classList.remove('bottle-photo');db.style.background=w.color;byId('dBottleImg').style.display='none';}
+  byId('dNotes').textContent=w.notes;
+  const slug=distSlug(w);
+  byId('dHist').textContent=HIST[w.id]||(DISTILLERIES[slug]||{}).story||'';
+  byId('distLink').style.display=slug?'':'none';
+  renderShops(w);
+  renderDrinks(w);
+  byId('dPair').innerHTML=w.pair.map(p=>`<div class="pitem"><span class="pic">${pairIcon(p)}</span><b>${p}</b><small>${pairNote(p)}</small></div>`).join('');
+  byId('dFlavors').innerHTML=Object.entries(w.fl).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v])=>{
+    const lvl=v>75?'alto':v>50?'médio-alto':v>30?'médio':'baixo';
+    return `<div class="flavor"><div class="fr"><span>${k}</span><span>${lvl}</span></div><div class="bar"><i data-w="${v}"></i></div></div>`;
+  }).join('');
+  // rating
+  const r=cellar[id]?.rating||0;
+  paintStars(r);
+  // save button
+  const saved=!!cellar[id];
+  const b=byId('saveBtn');
+  b.textContent=saved?'✓ Na sua adega':'Adicionar à adega';
+  b.classList.toggle('saved',saved);
+  // wishlist heart
+  const wb=byId('wishBtn');
+  wb.textContent=wishlist[id]?'♥':'♡';
+  wb.classList.toggle('on',!!wishlist[id]);
+  // reviews
+  byId('dReviews').innerHTML=reviewsFor(w).slice(0,2).map(r=>`
+    <div class="rev"><div class="rev-top">
+      <div class="rev-av" style="background:${r.c}">${r.n[0]}</div>
+      <div class="rev-who"><b>${r.n}</b><small>${r.loc}</small></div>
+      <div class="rev-rt">${stars(r.rt)}</div>
+    </div><p>${r.t}</p></div>`).join('');
+  byId('detail').scrollTop=0;
+  byId('detail').classList.add('open');
+  // animate bars
+  setTimeout(()=>document.querySelectorAll('#dFlavors .bar i').forEach(i=>i.style.transform=`scaleX(${i.dataset.w/100})`),60);
+}
+function closeDetail(){byId('detail').classList.remove('open')}
+function paintStars(r){document.querySelectorAll('#rateStars span').forEach(s=>s.classList.toggle('on',+s.dataset.v<=r))}
+byId('rateStars').querySelectorAll('span').forEach(s=>{
+  s.onclick=()=>{
+    const v=+s.dataset.v;
+    if(!cellar[currentId])cellar[currentId]={};
+    cellar[currentId].rating=v;
+    // rating implies saving
+    const b=byId('saveBtn');b.textContent='✓ Na sua adega';b.classList.add('saved');
+    save();paintStars(v);toast(`Você deu ${v}★ — salvo na adega`);
+    refreshAll();
+  };
+});
+function toggleSave(){
+  if(cellar[currentId]){delete cellar[currentId];byId('saveBtn').textContent='Adicionar à adega';byId('saveBtn').classList.remove('saved');paintStars(0);toast('Removido da adega')}
+  else{cellar[currentId]={rating:0};byId('saveBtn').textContent='✓ Na sua adega';byId('saveBtn').classList.add('saved');toast('Adicionado à adega 🥃')}
+  save();refreshAll();
+}
+function shareW(){openShare()}
+
+/* ---------------- COLEÇÕES ---------------- */
+const COLLECTIONS=[
+  {id:'turfa',t:'Reis da turfa',s:'Fumaça pra quem gosta de sentir',e:'🔥',g:'linear-gradient(145deg,#3a5566,#26404e)',pick:w=>w.fl.Defumado>=65},
+  {id:'ate300',t:'Até R$ 300',s:'Ótimos sem pesar no bolso',e:'💰',g:'linear-gradient(145deg,#3f5e46,#2e4534)',pick:w=>w.p<=300},
+  {id:'presente',t:'Pra presentear',s:'Impressiona sem erro',e:'🎁',g:'linear-gradient(145deg,#7a3418,#a5561a)',pick:w=>['macallan12','yamazaki12','nikkabarrel','glenfiddich12','talisker10'].includes(w.id)},
+  {id:'japao',t:'Ícones japoneses',s:'Elegância do Oriente',e:'🎌',g:'linear-gradient(145deg,#9a4e17,#c0913f)',pick:w=>w.region==='Japão'},
+  {id:'bourbon',t:'Bourbons queridinhos',s:'Doce, cremoso e versátil',e:'🥃',g:'linear-gradient(145deg,#8a4512,#5f300f)',pick:w=>w.st==='Bourbon'},
+  {id:'lenda',t:'Lendas & colecionáveis',s:'Os cobiçados do mundo',e:'💎',g:'linear-gradient(145deg,#5a1f0e,#2e0f06)',pick:w=>tierOf(w.p)==='Colecionável'},
+];
+function colItems(c){return WHISKIES.filter(c.pick).sort((a,b)=>b.score-a.score)}
+function renderCollections(){
+  byId('colScroll').innerHTML=COLLECTIONS.map(c=>{const n=colItems(c).length;
+    return `<div class="col-card" style="background:${c.g}" onclick="openCollection('${c.id}')">
+      <span class="ce">${c.e}</span><b>${c.t}</b><small>${n} whiskies</small></div>`;
+  }).join('');
+  setTimeout(()=>updateArrows(byId('colScroll')),30);
+}
+function openCollection(id){
+  const c=COLLECTIONS.find(x=>x.id===id);
+  byId('colEmoji').textContent=c.e;byId('colTitle').textContent=c.t;byId('colSub').textContent=c.s;
+  byId('colBottles').innerHTML=colItems(c).map(cardHTML).join('');
+  byId('collection').scrollTop=0;byId('collection').classList.add('open');
+}
+function closeCollection(){byId('collection').classList.remove('open')}
+
+/* ---------------- SHARE CARD ---------------- */
+function openShare(){
+  const w=W(currentId);if(!w)return;
+  byId('scRegion').textContent='◉ '+w.region;
+  const sb=byId('scBottleBox');
+  if(w.img){sb.classList.add('bottle-photo');sb.style.setProperty('--bottle-bg',w.color);byId('scImg').src=w.img;byId('scImg').style.display='';}
+  else{sb.classList.remove('bottle-photo');sb.style.background=w.color;byId('scImg').style.display='none';}
+  byId('scName').textContent=w.name;
+  byId('scMeta').textContent=w.dist;
+  const my=cellar[w.id]?.rating;
+  byId('scScore').textContent=(my||w.score).toFixed(1);
+  byId('scStars').textContent=stars(my||w.score);
+  const top=Object.entries(w.fl).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k])=>k);
+  byId('scFlavors').innerHTML=top.map(f=>`<span>${f}</span>`).join('');
+  byId('share').classList.add('open');
+}
+function closeShare(){byId('share').classList.remove('open')}
+
+/* ---------------- CARROSSEL HORIZONTAL ---------------- */
+function hscroll(id,dir){const el=byId(id);el.scrollBy({left:dir*Math.min(el.clientWidth*.85,260),behavior:'smooth'})}
+function updateArrows(el){
+  if(!el)return;const wrap=el.closest('.hwrap');if(!wrap)return;
+  const max=el.scrollWidth-el.clientWidth-2;
+  const l=wrap.querySelector('.harr.l'),r=wrap.querySelector('.harr.r');
+  if(l)l.classList.toggle('hide',el.scrollLeft<=2);
+  if(r)r.classList.toggle('hide',el.scrollLeft>=max||max<=0);
+}
+function setupHScroll(){
+  document.querySelectorAll('.drinks-scroll,.col-scroll,.chips').forEach(el=>{
+    el.addEventListener('wheel',e=>{
+      if(Math.abs(e.deltaY)>Math.abs(e.deltaX)&&el.scrollWidth>el.clientWidth){el.scrollLeft+=e.deltaY;e.preventDefault();}
+    },{passive:false});
+    el.addEventListener('scroll',()=>updateArrows(el));
+  });
+  window.addEventListener('resize',()=>{updateArrows(byId('dDrinks'));updateArrows(byId('colScroll'))});
+}
+function toggleWish(){
+  if(wishlist[currentId]){delete wishlist[currentId];byId('wishBtn').textContent='♡';byId('wishBtn').classList.remove('on');toast('Removido dos desejos')}
+  else{wishlist[currentId]=true;byId('wishBtn').textContent='♥';byId('wishBtn').classList.add('on');toast('Salvo em "quero provar" ♥')}
+  saveWish();renderCellar();
+}
+
+/* ---------------- CELLAR ---------------- */
+function setCellarView(v,btn){cellarView=v;document.querySelectorAll('#cellarSeg button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderCellar()}
+function renderCellar(){
+  const sub=byId('cellarSub'),el=byId('cellarList');
+  const ids=cellarView==='proved'?Object.keys(cellar):Object.keys(wishlist);
+  if(!ids.length){
+    if(cellarView==='proved'){
+      sub.textContent='Ainda vazia — bora encher?';
+      el.innerHTML=`<div class="empty"><div class="em">🗄️</div><h3>Sua adega está vazia</h3><p>Escaneie ou explore whiskies e salve seus favoritos aqui.</p><button onclick="go('discover',document.querySelector('[data-tab=discover]'))">Explorar whiskies</button></div>`;
+    }else{
+      sub.textContent='Sua lista de desejos';
+      el.innerHTML=`<div class="empty"><div class="em">♡</div><h3>Nada na lista ainda</h3><p>Toque no coração de um whisky pra guardar pra provar depois.</p><button onclick="go('discover',document.querySelector('[data-tab=discover]'))">Explorar whiskies</button></div>`;
+    }
+    return;
+  }
+  sub.textContent=cellarView==='proved'?`${ids.length} whisky${ids.length>1?'s':''} na sua coleção`:`${ids.length} pra provar um dia`;
+  el.innerHTML=ids.map(id=>{
+    const w=W(id),r=cellar[id]?.rating;
+    const line=cellarView==='proved'?(r?('Sua nota: '+stars(r)):'toque pra avaliar'):('Preço médio · '+w.price);
+    return `<div class="w-card" onclick="openDetail('${id}')">
+      ${bottleHTML(w)}
+      <div class="w-info"><h4>${w.name}</h4><div class="m">${w.region} · ${w.dist.split('·')[0].trim()}</div>
+        <div class="my-rate">${line}</div></div>
+      <div class="w-score"><div class="n">${w.score.toFixed(1)}</div><div class="st">${stars(w.score)}</div></div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------------- PROFILE ---------------- */
+function renderProfile(){
+  const ids=Object.keys(cellar);
+  renderBadges();
+  byId('stProved').textContent=ids.length;
+  const rated=ids.filter(id=>cellar[id].rating);
+  const avg=rated.length?(rated.reduce((s,id)=>s+cellar[id].rating,0)/rated.length):0;
+  byId('stAvg').textContent=avg?avg.toFixed(1):'—';
+  // fav region
+  const rc={};ids.forEach(id=>{const rg=W(id).region;rc[rg]=(rc[rg]||0)+1});
+  const fav=Object.entries(rc).sort((a,b)=>b[1]-a[1])[0];
+  byId('stRegion').textContent=fav?fav[0].split(' ')[0]:'—';
+  // title
+  const t=ids.length===0?'Degustador iniciante':ids.length<3?'Explorando o balcão':ids.length<6?'Paladar em treino':ids.length<9?'Conhecedor':'Mestre da adega';
+  byId('profSub').textContent=t;
+  // radar = avg flavor of saved
+  const poly=byId('radarData');
+  if(!ids.length){poly.setAttribute('points','100,100 100,100 100,100 100,100 100,100 100,100');byId('radarSub').textContent='prove whiskies pra ver seu perfil';return}
+  byId('radarSub').textContent=`baseado em ${ids.length} whisky${ids.length>1?'s':''}`;
+  const avgFl=RADAR_AXES.map(ax=>{
+    const vals=ids.map(id=>W(id).fl[ax]);
+    return vals.reduce((a,b)=>a+b,0)/vals.length;
+  });
+  // 6 axes, radius 80, center 100,100. angles start top (-90deg) clockwise
+  const pts=avgFl.map((v,i)=>{
+    const ang=(-90+i*60)*Math.PI/180, rad=20+ (v/100)*70;
+    return `${(100+rad*Math.cos(ang)).toFixed(1)},${(100+rad*Math.sin(ang)).toFixed(1)}`;
+  }).join(' ');
+  poly.setAttribute('points',pts);
+}
+
+/* ---------------- SCAN ---------------- */
+let scanning=false;
+function doScan(){
+  if(scanning)return;scanning=true;
+  const vf=byId('vf'),st=byId('scanStatus');
+  vf.classList.add('scanning');
+  const steps=['Procurando rótulo...','Lendo o rótulo...','Comparando no catálogo...','Quase lá...'];
+  let i=0;st.textContent=steps[0];
+  const iv=setInterval(()=>{i++;if(i<steps.length)st.textContent=steps[i]},450);
+  setTimeout(()=>{
+    clearInterval(iv);vf.classList.remove('scanning');scanning=false;
+    const w=WHISKIES[Math.floor(Math.random()*WHISKIES.length)];
+    st.textContent='✓ '+w.name+' reconhecido!';
+    toast('🥃 '+w.name+' reconhecido em 1,2s');
+    setTimeout(()=>openDetail(w.id),400);
+  },2000);
+}
+
+/* ---------------- NAV ---------------- */
+function go(tab,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  byId(tab).classList.add('active');
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  if(tab==='cellar')renderCellar();
+  if(tab==='ranking')renderRanking();
+  if(tab==='profile')renderProfile();
+  byId('scanStatus') && (tab==='scan') && (byId('scanStatus').textContent='Toque no botão pra escanear');
+}
+function refreshAll(){renderList();renderCellar();renderProfile()}
+
+/* ---------------- TOAST ---------------- */
+let tT;
+function toast(msg){const t=byId('toast');t.textContent=msg;t.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('show'),2200)}
+
+/* ---------------- ONBOARDING ---------------- */
+let onbStep=0, onbTastes=[];
+document.querySelectorAll('#onbTaste button').forEach(b=>{
+  b.onclick=()=>{const t=b.dataset.t;b.classList.toggle('on');
+    if(onbTastes.includes(t))onbTastes=onbTastes.filter(x=>x!==t);else onbTastes.push(t);};
+});
+function onbShowStep(n){document.querySelectorAll('.onb .step').forEach(s=>s.classList.toggle('active',+s.dataset.step===n))}
+function onbNext(){
+  if(onbStep===1 && !byId('onbName').value.trim()){byId('onbName').focus();byId('onbName').placeholder='Digite um nome 🙂';return}
+  onbStep++;onbShowStep(onbStep);
+}
+function onbFinish(){
+  const name=(byId('onbName').value||'Você').trim()||'Você';
+  user={name,tastes:onbTastes};
+  localStorage.setItem('dram_user',JSON.stringify(user));
+  applyUser();
+  byId('onb').classList.add('hide');
+  setTimeout(()=>{byId('onb').style.display='none'},550);
+  toast('Bem-vindo, '+name+'! 🥃');
+}
+function applyUser(){
+  const initial=(user?.name||'L').trim()[0].toUpperCase();
+  byId('topAv').textContent=initial;
+  document.querySelector('.prof-av').textContent=initial;
+  document.querySelector('.prof-head h2').textContent=user?.name||'Você';
+}
+
+/* ---------------- INIT ---------------- */
+renderChips();renderList();renderCellar();renderProfile();renderTierChips();renderRanking();renderLearn();renderCollections();setupHScroll();
+if(user){applyUser();byId('onb').style.display='none'}
+</script>
+</body>
+</html>
