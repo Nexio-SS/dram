@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <title>Dram — app</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -18,7 +18,8 @@
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   body{font-family:"Hanken Grotesk",system-ui,sans-serif;background:#e8ddc7;color:var(--ink);
-    -webkit-font-smoothing:antialiased;display:flex;justify-content:center;align-items:center;min-height:100vh}
+    -webkit-font-smoothing:antialiased;display:flex;justify-content:center;align-items:center;min-height:100vh;overflow-x:hidden}
+  @supports(height:100dvh){body{min-height:100dvh}}
   .serif{font-family:"Fraunces",serif}.mono{font-family:"IBM Plex Mono",monospace}
   ::selection{background:var(--amber);color:#fff}
   button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
@@ -35,7 +36,7 @@
 
   /* header */
   .topbar{position:sticky;top:0;z-index:40;background:rgba(246,239,225,.85);backdrop-filter:blur(12px);
-    padding:16px 20px 12px;border-bottom:1px solid var(--line)}
+    padding:calc(16px + env(safe-area-inset-top)) 20px 12px;border-bottom:1px solid var(--line)}
   .tb-row{display:flex;align-items:center;justify-content:space-between}
   .brand{display:flex;align-items:center;gap:9px;font-family:"Fraunces";font-weight:600;font-size:22px;letter-spacing:-.02em}
   .mark{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
@@ -48,7 +49,7 @@
     display:grid;place-items:center;color:#fff;font-weight:700;font-size:15px;box-shadow:var(--shadow)}
 
   /* scroll area */
-  .screen{flex:1;overflow-y:auto;padding-bottom:96px;position:relative;z-index:5}
+  .screen{flex:1;overflow-y:auto;padding-bottom:calc(96px + env(safe-area-inset-bottom));position:relative;z-index:5}
   .screen::-webkit-scrollbar{width:0}
   .pad{padding:20px}
   .page{display:none;animation:fade .35s ease}
@@ -112,7 +113,7 @@
     transition:transform .4s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column}
   .detail.open{transform:none}
   .detail::-webkit-scrollbar{display:none}
-  .d-hero{padding:22px 20px 18px;background:linear-gradient(180deg,var(--amber-soft),var(--paper));position:relative}
+  .d-hero{padding:calc(22px + env(safe-area-inset-top)) 20px 18px;background:linear-gradient(180deg,var(--amber-soft),var(--paper));position:relative}
   .back{width:38px;height:38px;border-radius:50%;background:var(--card);border:1px solid var(--line);
     display:grid;place-items:center;font-size:18px;box-shadow:var(--shadow)}
   .d-main{display:flex;gap:16px;align-items:flex-end;margin-top:14px}
@@ -127,7 +128,7 @@
   .d-stat{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center;box-shadow:var(--shadow)}
   .d-stat .n{font-family:"Fraunces";font-weight:600;font-size:20px;color:var(--amber-deep);line-height:1}
   .d-stat .l{font-size:10.5px;color:var(--muted);margin-top:3px}
-  .d-body{padding:16px 20px;flex:1}
+  .d-body{padding:16px 20px calc(24px + env(safe-area-inset-bottom));flex:1}
   .lbl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:10px}
   .flavor{margin-bottom:9px}
   .flavor .fr{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:4px;font-weight:600}
@@ -214,7 +215,7 @@
   .picker-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 12px;border-bottom:1px solid var(--line)}
   .picker-head b{font-family:"Fraunces";font-weight:600;font-size:18px}
   .picker-head button{width:30px;height:30px;border-radius:50%;background:var(--paper-2);font-size:14px;color:var(--ink-soft)}
-  .picker-list{overflow-y:auto;padding:12px 16px 24px}
+  .picker-list{overflow-y:auto;padding:12px 16px calc(24px + env(safe-area-inset-bottom))}
   .picker-list::-webkit-scrollbar{display:none}
 
   /* coleções curadas */
@@ -335,7 +336,7 @@
   .stars-in span.on{color:var(--gold)}
 
   /* sticky add */
-  .d-foot{position:sticky;bottom:0;padding:14px 20px;background:linear-gradient(180deg,transparent,var(--paper) 30%);display:flex;gap:10px}
+  .d-foot{position:sticky;bottom:0;padding:14px 20px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(180deg,transparent,var(--paper) 30%);display:flex;gap:10px}
   .btn{flex:1;padding:16px;border-radius:16px;font-weight:700;font-size:16px;transition:transform .15s ease,box-shadow .2s}
   .btn:active{transform:scale(.97)}
   .btn-amber{background:linear-gradient(180deg,var(--gold),var(--amber));color:#fff;box-shadow:0 10px 22px -8px rgba(191,116,32,.8)}
@@ -391,7 +392,7 @@
 
   /* bottom nav */
   .nav{position:absolute;bottom:0;left:0;right:0;z-index:45;background:rgba(255,253,247,.92);backdrop-filter:blur(14px);
-    border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;padding:10px 8px 14px}
+    border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;padding:10px 8px calc(14px + env(safe-area-inset-bottom))}
   .nav button{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600;color:var(--muted);width:64px;transition:color .2s}
   .nav button .i{font-size:21px;transition:transform .2s}
   .nav button.on{color:var(--amber-deep)}
@@ -749,7 +750,7 @@
 
   <!-- ============ COMPARAR ============ -->
   <div class="detail" id="compare" style="z-index:56">
-    <div class="d-hero" style="background:linear-gradient(180deg,var(--green-soft),var(--paper));padding-top:24px">
+    <div class="d-hero" style="background:linear-gradient(180deg,var(--green-soft),var(--paper));padding-top:calc(24px + env(safe-area-inset-top))">
       <button class="back" onclick="closeCompare()">←</button>
       <h2 style="font-family:'Fraunces';font-weight:600;font-size:24px;margin-top:16px">Comparar</h2>
       <div class="dm">Escolha dois whiskies pra ver lado a lado</div>
