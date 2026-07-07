@@ -38,11 +38,18 @@
   .topbar{position:sticky;top:0;z-index:40;background:rgba(246,239,225,.85);backdrop-filter:blur(12px);
     padding:calc(16px + env(safe-area-inset-top)) 20px 12px;border-bottom:1px solid var(--line)}
   .tb-row{display:flex;align-items:center;justify-content:space-between}
-  .brand{display:flex;align-items:center;gap:9px;font-family:"Fraunces";font-weight:600;font-size:22px;letter-spacing:-.02em}
-  .mark{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
-    background:radial-gradient(circle at 32% 28%,var(--gold),var(--amber) 55%,var(--amber-deep));
-    box-shadow:inset 0 2px 3px rgba(255,255,255,.4),0 3px 8px -3px rgba(154,78,23,.6)}
-  .mark span{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.55)}
+  .mark-defs{position:absolute;width:0;height:0;overflow:hidden}
+  .brand{display:flex;align-items:center;gap:10px;font-family:"Fraunces";font-weight:700;font-size:23px;line-height:1;letter-spacing:-.025em}
+  .brand-word{position:relative;display:inline-block;padding-bottom:2px;text-shadow:0 1px 0 rgba(255,253,247,.65)}
+  .brand-word::after{content:"";position:absolute;left:1px;bottom:-2px;width:31px;height:2px;border-radius:99px;
+    background:linear-gradient(90deg,var(--amber-deep),rgba(191,116,32,0))}
+  .mark{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;position:relative;overflow:hidden;flex:0 0 auto;
+    background:radial-gradient(circle at 28% 20%,#f5c978 0 12%,#c77a25 34%,#734017 68%,#2b2015 100%);
+    box-shadow:inset 0 1px 0 rgba(255,253,247,.45),inset 0 -8px 16px rgba(43,32,21,.34),0 9px 18px -10px rgba(116,64,23,.85)}
+  .mark::before{content:"";position:absolute;inset:1px;border-radius:11px;border:1px solid rgba(255,248,233,.28);box-shadow:inset 0 0 0 1px rgba(43,32,21,.18)}
+  .mark::after{content:"";position:absolute;left:-14px;top:4px;width:42px;height:12px;transform:rotate(-34deg);
+    background:linear-gradient(90deg,rgba(255,255,255,.34),rgba(255,255,255,0));filter:blur(.2px)}
+  .mark svg{position:relative;z-index:1;width:88%;height:88%;display:block;filter:drop-shadow(0 1px 1px rgba(43,32,21,.32))}
   .greet{font-size:13px;color:var(--muted)}
   .greet b{color:var(--ink);font-family:"Fraunces";font-weight:600;font-size:16px;display:block}
   .avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--amber));
@@ -237,8 +244,9 @@
   .share.open .share-card{transform:none}
   .share-card::after{content:"";position:absolute;top:-60px;right:-50px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(224,169,79,.45),transparent 68%)}
   .sc-top{display:flex;align-items:center;justify-content:space-between;position:relative;z-index:2}
-  .sc-brand{display:flex;align-items:center;gap:8px;font-family:"Fraunces";font-weight:600;font-size:18px}
-  .sc-brand .mark{width:24px;height:24px}.sc-brand .mark span{width:8px;height:8px}
+  .sc-brand{display:flex;align-items:center;gap:8px;font-family:"Fraunces";font-weight:700;font-size:18px}
+  .sc-brand .mark{width:28px;height:28px;border-radius:10px}
+  .sc-brand .mark::before{border-radius:9px}.sc-brand .brand-word::after{width:24px;height:1.5px}
   .sc-region{font-size:11px;color:var(--gold);font-weight:600;background:rgba(224,169,79,.18);padding:4px 10px;border-radius:100px}
   .sc-bottle{display:flex;justify-content:center;margin:16px 0 12px;position:relative;z-index:2}
   .sc-bottle .d-bottle{width:80px;height:120px}
@@ -345,7 +353,38 @@
 
   /* CELLAR */
   .empty{text-align:center;padding:70px 30px;color:var(--muted)}
-  .empty .em{font-size:52px;margin-bottom:16px;opacity:.7}
+  .empty .em{font-size:52px;margin-bottom:16px;opacity:.7;display:flex;justify-content:center}
+  .empty .em svg{width:54px;height:54px;stroke-width:1.4;opacity:.85}
+
+  /* taste match */
+  .match-badge{display:inline-flex;align-items:center;gap:5px;margin-top:7px;font-size:11.5px;font-weight:700;
+    color:var(--amber-deep);background:var(--amber-soft);padding:3px 10px;border-radius:100px}
+  .match-badge svg{width:12px;height:12px}
+  .d-match{display:flex;align-items:center;gap:11px;margin:0 0 4px;background:var(--amber-soft);border-radius:14px;padding:11px 14px}
+  .d-match .mi{width:34px;height:34px;flex:0 0 auto;border-radius:10px;background:rgba(154,78,23,.14);color:var(--amber-deep);display:grid;place-items:center}
+  .d-match .mi svg{width:19px;height:19px}
+  .d-match .mt{flex:1;min-width:0}
+  .d-match .mt b{font-size:13.5px;color:var(--ink);display:block}
+  .d-match .bar-mini{height:6px;border-radius:100px;background:rgba(154,78,23,.16);overflow:hidden;margin-top:5px}
+  .d-match .bar-mini i{display:block;height:100%;border-radius:100px;background:linear-gradient(90deg,var(--gold),var(--amber-deep));transform:scaleX(0);transform-origin:left;transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+  .d-match .mp{font-family:"Fraunces";font-weight:600;font-size:20px;color:var(--amber-deep);flex:0 0 auto}
+
+  /* comentários */
+  .cmt-row{display:flex;gap:11px;padding:12px 4px;border-bottom:1px solid var(--line)}
+  .cmt-av{width:36px;height:36px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:14px}
+  .cmt-b{flex:1;min-width:0}
+  .cmt-b .cmt-h{display:flex;align-items:baseline;gap:8px}
+  .cmt-b .cmt-h b{font-size:13.5px}
+  .cmt-b .cmt-h .tm{font-size:11px;color:var(--muted)}
+  .cmt-b p{font-size:14px;color:var(--ink-soft);line-height:1.45;margin-top:2px}
+  .cmt-b .cmt-like{margin-top:6px;font-size:12px;color:var(--muted);display:inline-flex;align-items:center;gap:5px;cursor:pointer}
+  .cmt-b .cmt-like.on{color:var(--amber-deep);font-weight:600}
+  .cmt-compose{display:flex;gap:9px;padding:12px 16px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--paper)}
+  .cmt-compose input{flex:1;border:1px solid var(--line);background:var(--card);border-radius:100px;padding:11px 16px;font-family:inherit;font-size:14px;color:var(--ink);outline:none}
+  .cmt-compose button{background:var(--ink);color:var(--paper);border-radius:100px;padding:0 18px;font-weight:600;font-size:14px}
+  .cmt-empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px}
+  .d-cmt-cta{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:100px;padding:12px;font-weight:600;font-size:14px;color:var(--ink-soft);box-shadow:var(--shadow)}
+  .d-cmt-cta svg{width:17px;height:17px}
   .empty h3{font-family:"Fraunces";font-weight:600;font-size:20px;color:var(--ink);margin-bottom:8px}
   .empty p{font-size:14.5px;margin-bottom:20px}
   .empty button{background:var(--ink);color:var(--paper);padding:12px 24px;border-radius:100px;font-weight:600;font-size:14.5px}
@@ -353,22 +392,69 @@
 
   /* SCAN */
   #scan .pad{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;text-align:center}
-  .viewfinder{width:250px;height:250px;border-radius:32px;position:relative;background:
-     linear-gradient(135deg,#241a10,#3a2c1a);overflow:hidden;box-shadow:var(--shadow-lg);margin-bottom:8px}
-  .viewfinder .corner{position:absolute;width:34px;height:34px;border:3px solid var(--gold)}
+  .viewfinder{width:250px;height:250px;border-radius:32px;position:relative;overflow:hidden;isolation:isolate;
+     background:#150e07;box-shadow:var(--shadow-lg),inset 0 0 60px rgba(0,0,0,.7);margin-bottom:8px}
+  /* simulated live camera feed */
+  .vf-feed{position:absolute;inset:0;z-index:0;transform:scale(1.06);
+     filter:blur(3px) brightness(.6) saturate(1.15);transition:filter .8s ease}
+  .viewfinder.scanning .vf-feed{filter:blur(.5px) brightness(.92) saturate(1.25)}
+  .vf-feed::before{content:"";position:absolute;inset:0;background:
+     radial-gradient(60% 42% at 50% 14%,rgba(224,169,79,.30),transparent 70%),
+     radial-gradient(55% 60% at 82% 82%,rgba(63,94,70,.32),transparent 75%),
+     linear-gradient(180deg,#2a1d10,#120b05)}
+  .vf-feed::after{content:"";position:absolute;left:0;right:0;bottom:33%;height:12px;
+     background:linear-gradient(180deg,rgba(126,84,37,.75),rgba(38,25,11,.95));box-shadow:0 12px 26px rgba(0,0,0,.55)}
+  .vf-bottle{position:absolute;bottom:33%;width:34px;height:108px;border-radius:15px 15px 5px 5px;filter:blur(1px)}
+  .vf-bottle::before{content:"";position:absolute;top:-15px;left:50%;transform:translateX(-50%);width:11px;height:18px;background:inherit;border-radius:3px}
+  .vf-bottle.b1{left:22%;height:118px;background:linear-gradient(160deg,#7a4a1e,#3a2410);opacity:.9}
+  .vf-bottle.b2{left:42%;width:40px;height:134px;background:linear-gradient(160deg,#3f5e46,#1c2820);opacity:.96;z-index:2}
+  .vf-bottle.b3{left:63%;height:112px;background:linear-gradient(160deg,#b9812f,#6a4315);opacity:.85}
+  .vf-bottle.b2::after{content:"";position:absolute;top:16px;left:8px;width:6px;bottom:16px;background:rgba(255,240,210,.32);border-radius:4px;filter:blur(1px)}
+  /* menu mode */
+  .vf-feed.menu .vf-bottle,.vf-feed.menu::after{display:none}
+  .vf-feed.menu::before{background:
+     radial-gradient(70% 60% at 50% 40%,rgba(246,239,225,.18),transparent 75%),linear-gradient(180deg,#241a10,#120b05)}
+  .vf-card{display:none;position:absolute;inset:20% 25%;background:rgba(240,230,208,.15);border-radius:6px;padding:18px 16px;box-shadow:0 10px 22px rgba(0,0,0,.5)}
+  .vf-feed.menu .vf-card{display:block}
+  .vf-card i{display:block;height:5px;border-radius:3px;background:rgba(240,230,208,.5);margin-bottom:11px}
+  .vf-card i:nth-child(1){width:65%}.vf-card i:nth-child(2){width:92%}.vf-card i:nth-child(3){width:50%}
+  .vf-card i:nth-child(4){width:84%}.vf-card i:nth-child(5){width:38%}
+  /* rule-of-thirds grid */
+  .vf-grid{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.11;background:
+     linear-gradient(90deg,transparent 33.2%,#fff 33.2%,#fff 33.5%,transparent 33.5%,transparent 66.4%,#fff 66.4%,#fff 66.7%,transparent 66.7%),
+     linear-gradient(0deg,transparent 33.2%,#fff 33.2%,#fff 33.5%,transparent 33.5%,transparent 66.4%,#fff 66.4%,#fff 66.7%,transparent 66.7%)}
+  /* autofocus reticle */
+  .vf-reticle{position:absolute;top:50%;left:50%;width:72px;height:72px;transform:translate(-50%,-50%);z-index:2;
+     border:1.5px solid rgba(255,255,255,.4);border-radius:10px;opacity:0;transition:.5s cubic-bezier(.2,.8,.2,1)}
+  .viewfinder.scanning .vf-reticle{opacity:1;width:118px;height:118px;border-color:var(--gold);
+     box-shadow:0 0 0 1px rgba(224,169,79,.3),0 0 20px rgba(224,169,79,.45)}
+  /* vignette */
+  .viewfinder::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;border-radius:32px;
+     box-shadow:inset 0 0 72px 12px rgba(0,0,0,.62)}
+  .viewfinder .corner{position:absolute;z-index:4;width:34px;height:34px;border:3px solid var(--gold)}
   .c1{top:16px;left:16px;border-right:none;border-bottom:none;border-radius:10px 0 0 0}
   .c2{top:16px;right:16px;border-left:none;border-bottom:none;border-radius:0 10px 0 0}
   .c3{bottom:16px;left:16px;border-right:none;border-top:none;border-radius:0 0 0 10px}
   .c4{bottom:16px;right:16px;border-left:none;border-top:none;border-radius:0 0 10px 0}
-  .scanline{position:absolute;left:16px;right:16px;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);top:20px;box-shadow:0 0 12px var(--gold);opacity:0}
+  .scanline{position:absolute;z-index:3;left:16px;right:16px;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);top:20px;box-shadow:0 0 12px var(--gold);opacity:0}
   .viewfinder.scanning .scanline{opacity:1;animation:scanmove 1.6s ease-in-out infinite}
   @keyframes scanmove{0%,100%{top:24px}50%{top:222px}}
-  .vf-ghost{position:absolute;inset:0;display:grid;place-items:center;font-size:70px;opacity:.25;filter:grayscale(1)}
-  .viewfinder.scanning .vf-ghost{animation:pulse 1.2s ease-in-out infinite}
-  @keyframes pulse{50%{opacity:.4}}
+  .vf-hud{position:absolute;z-index:5;top:12px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:center;
+     font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.09em;color:rgba(255,255,255,.55)}
+  .vf-live{display:flex;align-items:center;gap:5px;color:rgba(255,255,255,.7)}
+  .vf-live::before{content:"";width:6px;height:6px;border-radius:50%;background:#ff5b4a;box-shadow:0 0 8px #ff5b4a;animation:blink 1.4s steps(1) infinite}
+  @keyframes blink{50%{opacity:.25}}
   .scan-status{font-family:"IBM Plex Mono";font-size:13px;color:var(--muted);margin:18px 0 22px;min-height:20px}
-  .scan-btn{background:linear-gradient(180deg,var(--gold),var(--amber));color:#fff;width:76px;height:76px;border-radius:50%;font-size:30px;box-shadow:0 12px 26px -8px rgba(191,116,32,.8);display:grid;place-items:center;transition:transform .15s}
+  .scan-btn{position:relative;background:linear-gradient(180deg,var(--gold),var(--amber));color:#fff;width:72px;height:72px;border-radius:50%;font-size:27px;display:grid;place-items:center;transition:transform .15s;
+     box-shadow:0 0 0 4px var(--paper),0 0 0 6px rgba(191,116,32,.5),0 12px 26px -8px rgba(191,116,32,.8)}
   .scan-btn:active{transform:scale(.92)}
+  .scan-btn.busy{animation:shutterpulse 1s ease-in-out infinite}
+  @keyframes shutterpulse{50%{box-shadow:0 0 0 4px var(--paper),0 0 0 9px rgba(191,116,32,.75),0 12px 30px -6px rgba(191,116,32,.95)}}
+  .scan-tip{margin-top:18px;max-width:270px;font-size:12.5px;line-height:1.45;color:var(--muted);min-height:34px;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 14px;box-shadow:var(--shadow);
+    opacity:0;transform:translateY(6px);transition:opacity .4s,transform .4s}
+  .scan-tip.show{opacity:1;transform:none}
+  .scan-tip b{color:var(--amber-deep);font-weight:600}
   #scan h2{font-family:"Fraunces";font-weight:600;font-size:23px;margin-bottom:6px}
   #scan .hint{font-size:14px;color:var(--muted);max-width:260px}
 
@@ -394,12 +480,14 @@
   .nav{position:absolute;bottom:0;left:0;right:0;z-index:45;background:rgba(255,253,247,.92);backdrop-filter:blur(14px);
     border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;padding:10px 8px calc(14px + env(safe-area-inset-bottom))}
   .nav button{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600;color:var(--muted);width:64px;transition:color .2s}
-  .nav button .i{font-size:21px;transition:transform .2s}
+  .nav button .i{font-size:21px;transition:transform .2s;display:grid;place-items:center;line-height:0}
+  .nav button .i svg{display:block}
   .nav button.on{color:var(--amber-deep)}
   .nav button.on .i{transform:translateY(-2px) scale(1.08)}
   .nav .scan-tab{width:58px;height:58px;border-radius:50%;background:linear-gradient(180deg,var(--gold),var(--amber));
     color:#fff;margin-top:-24px;box-shadow:0 10px 22px -6px rgba(191,116,32,.8);justify-content:center}
-  .nav .scan-tab .i{font-size:26px}
+  .nav .scan-tab .i{font-size:26px;display:grid;place-items:center;line-height:0}
+  .nav .scan-tab .i svg{display:block}
   .nav .scan-tab span{display:none}
 
   /* toast */
@@ -451,10 +539,9 @@
   .onb.hide{transform:translateY(-100%)}
   .onb .step{display:none;flex:1;flex-direction:column;justify-content:center;animation:fade .4s ease}
   .onb .step.active{display:flex}
-  .onb .big-mark{width:66px;height:66px;border-radius:50%;display:grid;place-items:center;margin-bottom:22px;
-    background:radial-gradient(circle at 32% 28%,var(--gold),var(--amber) 55%,var(--amber-deep));
-    box-shadow:inset 0 2px 4px rgba(255,255,255,.4),0 10px 24px -8px rgba(154,78,23,.6)}
-  .onb .big-mark span{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.55)}
+  .onb .big-mark{width:72px;height:72px;border-radius:21px;margin-bottom:24px;
+    box-shadow:inset 0 1px 0 rgba(255,253,247,.48),inset 0 -16px 30px rgba(43,32,21,.35),0 18px 34px -16px rgba(116,64,23,.8)}
+  .onb .big-mark::before{border-radius:20px}.onb .big-mark svg{width:86%;height:86%}
   .onb h1{font-family:"Fraunces";font-weight:600;font-size:34px;line-height:1.05;letter-spacing:-.02em;margin-bottom:12px}
   .onb h1 em{font-style:italic;color:var(--amber-deep)}
   .onb .sub{font-size:16px;color:var(--ink-soft);margin-bottom:8px}
@@ -475,12 +562,21 @@
 </head>
 <body>
 <div class="phone">
+  <svg class="mark-defs" aria-hidden="true" focusable="false" width="0" height="0">
+    <symbol id="dram-mark-symbol" viewBox="0 0 64 64">
+      <path d="M15.5 18.7c7.5-5.2 25.5-5.2 33 0" fill="none" stroke="#f0c36b" stroke-opacity=".74" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M15.5 45.3c7.5 5.2 25.5 5.2 33 0" fill="none" stroke="#f0c36b" stroke-opacity=".74" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M20.8 12.5h13c11.7 0 20 8.1 20 19.5s-8.3 19.5-20 19.5h-13v-39Zm9.6 9.3v20.4h3.7c5.9 0 10.1-4.1 10.1-10.2s-4.2-10.2-10.1-10.2h-3.7Z" fill="#fff8e9" fill-rule="evenodd"/>
+      <path d="M20.8 12.5v39" fill="none" stroke="#f0c36b" stroke-opacity=".46" stroke-width="1.8" stroke-linecap="round"/>
+      <circle cx="28" cy="18.9" r="3.2" fill="#f0c36b" fill-opacity=".9"/>
+    </symbol>
+  </svg>
 
   <!-- ============ ONBOARDING ============ -->
   <div class="onb" id="onb">
     <!-- step 1 -->
     <div class="step active" data-step="0">
-      <div class="big-mark"><span></span></div>
+      <div class="mark big-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#dram-mark-symbol"></use></svg></div>
       <h1>Bem-vindo ao <em>Dram</em>.</h1>
       <p class="sub">Descubra, avalie e guarde seus whiskies favoritos. Sem precisar ser especialista.</p>
       <button class="big-btn" style="margin-top:28px" onclick="onbNext()">Começar 🥃</button>
@@ -488,7 +584,7 @@
     </div>
     <!-- step 2 -->
     <div class="step" data-step="1">
-      <div class="big-mark"><span></span></div>
+      <div class="mark big-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#dram-mark-symbol"></use></svg></div>
       <h1>Como te <em>chamamos?</em></h1>
       <p class="sub">Pra deixar sua adega com a sua cara.</p>
       <div class="field">
@@ -500,7 +596,7 @@
     </div>
     <!-- step 3 -->
     <div class="step" data-step="2">
-      <div class="big-mark"><span></span></div>
+      <div class="mark big-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#dram-mark-symbol"></use></svg></div>
       <h1>O que você <em>curte?</em></h1>
       <p class="sub">Escolha alguns sabores pra afinar suas recomendações.</p>
       <div class="taste" id="onbTaste">
@@ -520,7 +616,7 @@
   <!-- TOPBAR -->
   <div class="topbar">
     <div class="tb-row">
-      <div class="brand"><span class="mark"><span></span></span>Dram</div>
+      <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#dram-mark-symbol"></use></svg></span><span class="brand-word">Dram</span></div>
       <div class="avatar" id="topAv">L</div>
     </div>
   </div>
@@ -531,8 +627,8 @@
     <div class="page active" id="discover">
       <div class="pad">
         <div style="margin-top:4px">
-          <div class="greet">Boa noite 🌙</div>
-          <div class="greet"><b>O que vamos provar hoje?</b></div>
+          <div class="greet" id="greetTime">Boa noite 🌙</div>
+          <div class="greet"><b id="greetLine">O que vamos provar hoje?</b></div>
         </div>
         <div class="seg" style="margin:16px 0 4px">
           <button class="on" data-dv="forYou" onclick="setDiscover('forYou',this)">✨ Pra você</button>
@@ -553,6 +649,8 @@
             <div class="go">Ver ficha completa →</div>
           </div>
 
+          <div id="forYouMatch"></div>
+
           <div class="section-t">Coleções pra você</div>
           <div class="section-s">Listas montadas a dedo</div>
           <div class="hwrap">
@@ -566,7 +664,7 @@
           <div id="list"></div>
 
           <button class="learn-cta" onclick="openLearn()">
-            <span class="learn-ic">📚</span>
+            <span class="learn-ic"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg></span>
             <span><b>Aprenda whisky em 5 minutos</b><small>Como degustar, tipos e glossário sem enrolação</small></span>
             <span class="learn-go">→</span>
           </button>
@@ -599,7 +697,7 @@
         <div class="section-t" style="margin-top:6px">Ranking por preço</div>
         <div class="section-s" id="rankSub">Do colecionável ao dia a dia</div>
         <button class="cmp-cta" onclick="openCompare()">
-          <span class="cmp-cta-ic">⇄</span>
+          <span class="cmp-cta-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg></span>
           <span><b>Comparar dois whiskies</b><small>Sabor, preço e nota lado a lado</small></span>
           <span class="cmp-cta-go">→</span>
         </button>
@@ -612,15 +710,31 @@
     <div class="page" id="scan">
       <div class="pad">
         <h2>Escanear rótulo</h2>
-        <p class="hint" style="margin-bottom:26px">Aponte pra garrafa ou pro cardápio do bar</p>
+        <p class="hint" id="scanHint" style="margin-bottom:20px">Aponte pra garrafa ou pro cardápio do bar</p>
+        <div class="seg" id="scanSeg" style="max-width:280px;margin:0 auto 22px">
+          <button class="on" data-sm="bottle" onclick="setScanMode('bottle',this)">🍾 Garrafa</button>
+          <button data-sm="menu" onclick="setScanMode('menu',this)">📋 Cardápio</button>
+        </div>
         <div class="viewfinder" id="vf">
-          <div class="vf-ghost">🥃</div>
+          <div class="vf-feed" id="vfFeed">
+            <span class="vf-bottle b1"></span><span class="vf-bottle b2"></span><span class="vf-bottle b3"></span>
+            <div class="vf-card"><i></i><i></i><i></i><i></i><i></i></div>
+          </div>
+          <div class="vf-grid"></div>
+          <div class="vf-reticle"></div>
           <div class="scanline"></div>
           <span class="corner c1"></span><span class="corner c2"></span>
           <span class="corner c3"></span><span class="corner c4"></span>
+          <div class="vf-hud"><span id="vfMode">🍾 GARRAFA</span><span class="vf-live">AO VIVO</span></div>
         </div>
         <div class="scan-status" id="scanStatus">Toque no botão pra escanear</div>
-        <button class="scan-btn" id="scanBtn" onclick="doScan()">📷</button>
+        <button class="scan-btn" id="scanBtn" onclick="doScan()" aria-label="Escanear">
+          <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.5 4h-5L7 6.5H4.5A2.5 2.5 0 0 0 2 9v8.5A2.5 2.5 0 0 0 4.5 20h15a2.5 2.5 0 0 0 2.5-2.5V9a2.5 2.5 0 0 0-2.5-2.5H17z"/>
+            <circle cx="12" cy="13" r="3.2"/>
+          </svg>
+        </button>
+        <div class="scan-tip" id="scanTip"></div>
       </div>
     </div>
 
@@ -681,6 +795,7 @@
       </div>
     </div>
     <div class="d-body">
+      <div class="d-match" id="dMatch" style="display:none"></div>
       <div class="lbl">Perfil de sabor</div>
       <div id="dFlavors"></div>
       <div class="notes-box">
@@ -717,6 +832,10 @@
 
       <div class="lbl" style="margin-top:18px">Avaliações da comunidade</div>
       <div id="dReviews"></div>
+      <button class="d-cmt-cta" onclick="openCmt(currentId)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        <span id="dCmtCount">Ver comentários</span>
+      </button>
     </div>
     <div class="d-foot">
       <button class="btn btn-amber" id="saveBtn" onclick="toggleSave()">Adicionar à adega</button>
@@ -788,7 +907,7 @@
   <div class="share" id="share">
     <div class="share-card" id="shareCard">
       <div class="sc-top">
-        <div class="sc-brand"><span class="mark"><span></span></span>Dram</div>
+        <div class="sc-brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#dram-mark-symbol"></use></svg></span><span class="brand-word">Dram</span></div>
         <div class="sc-region" id="scRegion"></div>
       </div>
       <div class="sc-bottle"><div class="d-bottle bottle-photo" id="scBottleBox"><img id="scImg" alt=""/></div></div>
@@ -834,13 +953,25 @@
     </div>
   </div>
 
+  <!-- ============ COMENTÁRIOS ============ -->
+  <div class="picker" id="cmtPicker">
+    <div class="picker-sheet">
+      <div class="picker-head"><b id="cmtTitle">Comentários</b><button onclick="closeCmt()">✕</button></div>
+      <div class="picker-list" id="cmtList"></div>
+      <div class="cmt-compose">
+        <input id="cmtInput" placeholder="Escreva um comentário..." maxlength="180" onkeydown="if(event.key==='Enter')sendCmt()" />
+        <button onclick="sendCmt()">Enviar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- NAV -->
   <div class="nav">
-    <button class="on" data-tab="discover" onclick="go('discover',this)"><span class="i">🧭</span><span>Descobrir</span></button>
-    <button data-tab="ranking" onclick="go('ranking',this)"><span class="i">💰</span><span>Ranking</span></button>
-    <button class="scan-tab" data-tab="scan" onclick="go('scan',this)"><span class="i">📷</span><span>Scan</span></button>
-    <button data-tab="cellar" onclick="go('cellar',this)"><span class="i">🗄️</span><span>Adega</span></button>
-    <button data-tab="profile" onclick="go('profile',this)"><span class="i">👤</span><span>Perfil</span></button>
+    <button class="on" data-tab="discover" onclick="go('discover',this)"><span class="i"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><polygon points="16.2 7.8 14 14 7.8 16.2 10 10"/></svg></span><span>Descobrir</span></button>
+    <button data-tab="ranking" onclick="go('ranking',this)"><span class="i"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="13"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="9"/></svg></span><span>Ranking</span></button>
+    <button class="scan-tab" data-tab="scan" onclick="go('scan',this)"><span class="i"><svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 6.5H4.5A2.5 2.5 0 0 0 2 9v8.5A2.5 2.5 0 0 0 4.5 20h15a2.5 2.5 0 0 0 2.5-2.5V9a2.5 2.5 0 0 0-2.5-2.5H17z"/><circle cx="12" cy="13" r="3.2"/></svg></span><span>Scan</span></button>
+    <button data-tab="cellar" onclick="go('cellar',this)"><span class="i"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3h4v2.6l1.2 2.3a3 3 0 0 1 .3 1.4V19a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2V9.3a3 3 0 0 1 .3-1.4L10 5.6z"/><line x1="8.6" y1="12.5" x2="15.4" y2="12.5"/></svg></span><span>Adega</span></button>
+    <button data-tab="profile" onclick="go('profile',this)"><span class="i"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 20.5v-1.5a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v1.5"/><circle cx="12" cy="7.5" r="3.8"/></svg></span><span>Perfil</span></button>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -971,14 +1102,93 @@ const BOTTLE_IMAGES={
   bulleit:'assets/bottles/bulleit.webp',
   jameson:'assets/bottles/jameson.webp',
   pappy23:'assets/bottles/pappy23.webp',
-  macallan1926:'assets/bottles/macallan1926.webp'
+  macallan1926:'assets/bottles/macallan1926.webp',
+  glenlivet12:'assets/bottles/glenlivet12.webp',
+  glenmorangie10:'assets/bottles/glenmorangie10.webp',
+  balvenie12:'assets/bottles/balvenie12.webp',
+  laphroaig10:'assets/bottles/laphroaig10.webp',
+  highlandpark12:'assets/bottles/highlandpark12.webp',
+  oban14:'assets/bottles/oban14.webp',
+  bowmore12:'assets/bottles/bowmore12.webp',
+  aberlour12:'assets/bottles/aberlour12.webp',
+  redbreast12:'assets/bottles/redbreast12.webp',
+  hibiki:'assets/bottles/hibiki.webp',
+  makersmark:'assets/bottles/makersmark.webp',
+  wildturkey101:'assets/bottles/wildturkey101.webp',
+  jwblack:'assets/bottles/jwblack.webp',
+  chivas12:'assets/bottles/chivas12.webp'
 };
+const BOTTLE_ART={
+  glenlivet12:{brand:'THE GLENLIVET',age:'12',sub:'SINGLE MALT',glass:'#1f6543',liquid:'#c9822c',label:'#f8efd6',fg:'#17412e',accent:'#c9983c'},
+  glenmorangie10:{brand:'GLENMORANGIE',age:'10',sub:'ORIGINAL',glass:'#c8781f',liquid:'#dd9a38',label:'#fff1c8',fg:'#63320f',accent:'#d45220'},
+  balvenie12:{brand:'BALVENIE',age:'12',sub:'DOUBLEWOOD',glass:'#8a4e1f',liquid:'#c77a25',label:'#f7e5bd',fg:'#3b1c0f',accent:'#7a3418'},
+  laphroaig10:{brand:'LAPHROAIG',age:'10',sub:'ISLAY MALT',glass:'#153f2c',liquid:'#b8792b',label:'#f8f4e8',fg:'#153425',accent:'#222'},
+  highlandpark12:{brand:'HIGHLAND PARK',age:'12',sub:'VIKING HONOUR',glass:'#6b4328',liquid:'#b87028',label:'#201812',fg:'#f4d38a',accent:'#d9a648'},
+  oban14:{brand:'OBAN',age:'14',sub:'WEST HIGHLAND',glass:'#3b2a1a',liquid:'#b66c24',label:'#f2e2bd',fg:'#21160e',accent:'#b77720'},
+  bowmore12:{brand:'BOWMORE',age:'12',sub:'ISLAY',glass:'#264a57',liquid:'#b97528',label:'#f5f1e6',fg:'#17262b',accent:'#315a68'},
+  aberlour12:{brand:'ABERLOUR',age:'12',sub:'DOUBLE CASK',glass:'#7a2f17',liquid:'#b86624',label:'#f3dec0',fg:'#35140b',accent:'#9c2a19'},
+  redbreast12:{brand:'REDBREAST',age:'12',sub:'SINGLE POT STILL',glass:'#5b2410',liquid:'#9d4b1d',label:'#f7e9ca',fg:'#32170c',accent:'#b52820'},
+  hibiki:{brand:'HIBIKI',age:'',sub:'HARMONY',glass:'#d7a047',liquid:'#d19134',label:'#f8ead0',fg:'#45250d',accent:'#c69437',shape:'decanter'},
+  makersmark:{brand:"MAKER'S MARK",age:'',sub:'KENTUCKY BOURBON',glass:'#a5481a',liquid:'#cf7828',label:'#f5e5bf',fg:'#34160c',accent:'#b01918',wax:'#b01918'},
+  wildturkey101:{brand:'WILD TURKEY',age:'101',sub:'KENTUCKY BOURBON',glass:'#8a3812',liquid:'#c56f25',label:'#f4dfbd',fg:'#35150b',accent:'#b32216'},
+  jwblack:{brand:'JOHNNIE WALKER',age:'12',sub:'BLACK LABEL',glass:'#201812',liquid:'#8b521f',label:'#e5d1a6',fg:'#1b130d',accent:'#111',shape:'square',diagonal:true},
+  chivas12:{brand:'CHIVAS REGAL',age:'12',sub:'BLENDED SCOTCH',glass:'#b97824',liquid:'#d18a2f',label:'#f3d39a',fg:'#451b10',accent:'#8f1f18',shape:'decanter'}
+};
+const FALLBACK_IMAGES={};
+function escXML(v){
+  return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
+}
+function brandLines(v){
+  const words=String(v).split(' ');
+  if(v.length<=13)return [v];
+  if(words.length===2)return words;
+  if(words.length>2)return [words.slice(0,-1).join(' '),words[words.length-1]];
+  return [v.slice(0,12),v.slice(12)];
+}
+function bottleArtData(w){
+  const art=BOTTLE_ART[w.id]||{};
+  const brand=(art.brand||w.name.replace(/\b\d{2,3}\b/g,'').trim()).toUpperCase();
+  const age=art.age!=null?art.age:((w.name.match(/\b\d{2,3}\b/)||[])[0]||'');
+  const sub=(art.sub||w.region).toUpperCase();
+  const shape=art.shape||'round';
+  const body=shape==='square'
+    ? 'M72 122 86 88V44c0-10 9-17 24-17s24 7 24 17v44l14 34 9 203H63l9-203Z'
+    : shape==='decanter'
+    ? 'M92 30h36l3 54 22 32v206c0 12-9 20-22 20H89c-13 0-22-8-22-20V116l22-32 3-54Z'
+    : 'M91 30h38v55c0 20 17 25 19 48l8 166c2 28-15 43-46 43s-48-15-46-43l8-166c2-23 19-28 19-48V30Z';
+  const labelY=art.diagonal?198:190;
+  const lines=brandLines(brand).map((line,i)=>`<text x="110" y="${labelY+i*17}" text-anchor="middle" font-family="Georgia,serif" font-size="14" font-weight="700" fill="${art.fg||'#2b2015'}">${escXML(line)}</text>`).join('');
+  const ageText=age?`<text x="110" y="${labelY+47}" text-anchor="middle" font-family="Georgia,serif" font-size="30" font-weight="700" fill="${art.accent||'#9a4e17'}">${escXML(age)}</text>`:'';
+  const subY=age?labelY+68:labelY+42;
+  const wax=art.wax?`<path d="M86 48h48v46c-9-7-12 10-21 3-7-6-10 8-18 1-5-5-9 4-9 4V48Z" fill="${art.wax}"/><path d="M89 48c2 10 41 10 43 0-1-10-42-10-43 0Z" fill="#d3382a"/>`:'';
+  const label=`<g ${art.diagonal?'transform="rotate(-10 110 228)"':''}>
+    <rect x="60" y="172" width="100" height="104" rx="7" fill="${art.label||'#f7e5bd'}" stroke="${art.accent||'#9a4e17'}" stroke-width="3"/>
+    <path d="M70 182h80M70 266h80" stroke="${art.accent||'#9a4e17'}" stroke-width="2" opacity=".55"/>
+    ${lines}${ageText}
+    <text x="110" y="${subY}" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" font-weight="700" fill="${art.fg||'#2b2015'}">${escXML(sub)}</text>
+  </g>`;
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 360">
+    <defs><linearGradient id="g" x1="62" x2="158" y1="20" y2="342" gradientUnits="userSpaceOnUse"><stop stop-color="${art.glass||'#7a4a1f'}"/><stop offset=".55" stop-color="${art.liquid||'#bf7420'}"/><stop offset="1" stop-color="${art.glass||'#7a4a1f'}"/></linearGradient></defs>
+    <ellipse cx="110" cy="342" rx="52" ry="10" fill="#2b2015" opacity=".18"/>
+    <path d="${body}" fill="url(#g)" stroke="rgba(43,32,21,.38)" stroke-width="3"/>
+    <path d="M92 35h36v29H92z" fill="${art.cap||art.accent||'#9a4e17'}" opacity=".9"/>
+    <path d="M84 71c16 8 36 8 52 0" fill="none" stroke="#fff8e9" stroke-width="5" opacity=".18"/>
+    <path d="M82 126c-7 57-8 126 2 178" fill="none" stroke="#fff8e9" stroke-width="7" stroke-linecap="round" opacity=".22"/>
+    ${label}
+    <circle cx="110" cy="159" r="13" fill="${art.accent||'#9a4e17'}" opacity=".95"/>
+    <text x="110" y="164" text-anchor="middle" font-family="Georgia,serif" font-size="12" font-weight="700" fill="#fff8e9">${escXML((brand[0]||'W')+(brand.split(' ')[1]?.[0]||''))}</text>
+    ${wax}
+  </svg>`;
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
 WHISKIES.forEach(w=>{
   if(w.p==null) w.p=+String(w.price).replace(/[^\d]/g,'');
   if(!w.st) w.st = /tennessee/i.test(w.dist)?'Tennessee' : /bourbon/i.test(w.dist)?'Bourbon'
     : /irland/i.test(w.dist)?'Irlandês' : /japon/i.test(w.dist)?'Japonês'
     : /blended/i.test(w.dist)?'Blended' : 'Single Malt';
-  w.img=BOTTLE_IMAGES[w.id] || null;
+  w.fallbackImg=bottleArtData(w);
+  FALLBACK_IMAGES[w.id]=w.fallbackImg;
+  w.img=BOTTLE_IMAGES[w.id] || w.fallbackImg;
 });
 function tierOf(p){return p>=5000?'Colecionável':p>=800?'Premium':p>=300?'Médio':'Entrada'}
 const HIST={
@@ -1104,8 +1314,13 @@ function renderChips(){
   byId('chips').innerHTML=REGIONS.map(r=>`<button class="chip ${r===activeChip?'on':''}" onclick="setChip('${r}')">${r}</button>`).join('');
 }
 function setChip(r){activeChip=r;renderChips();renderList()}
+function swapBottleImage(img){
+  const fallback=FALLBACK_IMAGES[img.dataset.wid];
+  if(fallback && img.src!==fallback){img.src=fallback;return}
+  img.style.display='none';
+}
 function bottleHTML(w,cls='bottle'){
-  if(w.img) return `<div class="${cls} bottle-photo" style="--bottle-bg:${w.color}"><img src="${w.img}" alt="" loading="lazy" aria-hidden="true"></div>`;
+  if(w.img) return `<div class="${cls} bottle-photo" style="--bottle-bg:${w.color}"><img src="${w.img}" data-wid="${w.id}" alt="" loading="lazy" aria-hidden="true" onerror="swapBottleImage(this)"></div>`;
   return `<div class="${cls}" style="background:${w.color}"></div>`;
 }
 function cardHTML(w){
@@ -1131,7 +1346,7 @@ function renderList(){
     return okR&&okQ;
   }).sort((a,b)=>b.score-a.score);
   byId('list').innerHTML=items.length?items.map(cardHTML).join(''):
-    `<div class="empty"><div class="em">🔍</div><h3>Nada por aqui</h3><p>Tenta outra busca ou região.</p></div>`;
+    `<div class="empty"><div class="em"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></div><h3>Nada por aqui</h3><p>Tenta outra busca ou região.</p></div>`;
 }
 
 /* ---------------- FEED (amigos) ---------------- */
@@ -1143,7 +1358,7 @@ const FEED=[
   {u:'Bruno A.',c:'linear-gradient(135deg,#7a3418,#c98a2e)',act:'avaliou',id:'buffalotrace',rt:4,tm:'ontem',likes:6,cmts:1,txt:'Melhor custo-benefício em bourbon, disparado.'},
   {u:'Diego P.',c:'linear-gradient(135deg,#9a4e17,#e0a94f)',act:'adicionou à adega',id:'ardbeg10',tm:'ontem',likes:9,cmts:2},
 ];
-let liked={};
+let liked=JSON.parse(localStorage.getItem('dram_liked')||'{}');
 function renderFeed(){
   byId('feedList').innerHTML=FEED.map((f,i)=>{
     const w=W(f.id);const isLiked=liked[i];
@@ -1160,13 +1375,13 @@ function renderFeed(){
       </div>
       <div class="feed-actions">
         <span class="${isLiked?'liked':''}" onclick="likeFeed(${i},this)">${isLiked?'♥':'♡'} ${f.likes+(isLiked?1:0)}</span>
-        <span onclick="toast('Comentários em breve 💬')">💬 ${f.cmts}</span>
+        <span onclick="event.stopPropagation();openCmt('${f.id}')">💬 ${cmtCount(f.id)}</span>
         <span onclick="shareW()">↗ Compartilhar</span>
       </div>
     </div>`;
   }).join('');
 }
-function likeFeed(i,el){liked[i]=!liked[i];renderFeed()}
+function likeFeed(i,el){liked[i]=!liked[i];localStorage.setItem('dram_liked',JSON.stringify(liked));haptic(liked[i]?12:6);renderFeed()}
 function setDiscover(v,btn){
   document.querySelectorAll('#discover .seg button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
   byId('forYou').style.display=v==='forYou'?'':'none';
@@ -1413,7 +1628,7 @@ function openDetail(id){
   byId('dVotes').textContent=(w.votes/1000).toFixed(1)+'k';
   byId('dPrice').textContent=w.price;
   const db=byId('dBottle');
-  if(w.img){db.classList.add('bottle-photo');db.style.setProperty('--bottle-bg',w.color);byId('dBottleImg').src=w.img;byId('dBottleImg').style.display='';}
+  if(w.img){const img=byId('dBottleImg');db.classList.add('bottle-photo');db.style.setProperty('--bottle-bg',w.color);img.dataset.wid=w.id;img.onerror=()=>swapBottleImage(img);img.src=w.img;img.style.display='';}
   else{db.classList.remove('bottle-photo');db.style.background=w.color;byId('dBottleImg').style.display='none';}
   byId('dNotes').textContent=w.notes;
   const slug=distSlug(w);
@@ -1426,6 +1641,17 @@ function openDetail(id){
     const lvl=v>75?'alto':v>50?'médio-alto':v>30?'médio':'baixo';
     return `<div class="flavor"><div class="fr"><span>${k}</span><span>${lvl}</span></div><div class="bar"><i data-w="${v}"></i></div></div>`;
   }).join('');
+  // taste match
+  const m=tasteMatch(w),dm=byId('dMatch');
+  if(m!=null){
+    dm.style.display='';
+    dm.innerHTML=`<div class="mi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 9.2 8.6 2 9.2l5.4 4.7L5.8 21 12 17.3 18.2 21l-1.6-7.1L22 9.2l-7.2-.6z"/></svg></div>
+      <div class="mt"><b>${matchLabel(m)}</b><div class="bar-mini"><i id="dMatchBar"></i></div></div>
+      <div class="mp">${m}%</div>`;
+    setTimeout(()=>{const bar=byId('dMatchBar');if(bar)bar.style.transform=`scaleX(${m/100})`},80);
+  } else dm.style.display='none';
+  // comentários
+  byId('dCmtCount').textContent=(cmtCount(id)?cmtCount(id)+' comentário'+(cmtCount(id)>1?'s':''):'Seja o primeiro a comentar');
   // rating
   const r=cellar[id]?.rating||0;
   paintStars(r);
@@ -1459,13 +1685,14 @@ byId('rateStars').querySelectorAll('span').forEach(s=>{
     cellar[currentId].rating=v;
     // rating implies saving
     const b=byId('saveBtn');b.textContent='✓ Na sua adega';b.classList.add('saved');
-    save();paintStars(v);toast(`Você deu ${v}★ — salvo na adega`);
+    save();paintStars(v);haptic([8,30,8]);toast(`Você deu ${v}★ — salvo na adega`);
     refreshAll();
   };
 });
 function toggleSave(){
+  haptic(12);
   if(cellar[currentId]){delete cellar[currentId];byId('saveBtn').textContent='Adicionar à adega';byId('saveBtn').classList.remove('saved');paintStars(0);toast('Removido da adega')}
-  else{cellar[currentId]={rating:0};byId('saveBtn').textContent='✓ Na sua adega';byId('saveBtn').classList.add('saved');toast('Adicionado à adega 🥃')}
+  else{cellar[currentId]={rating:0};byId('saveBtn').textContent='✓ Na sua adega';byId('saveBtn').classList.add('saved');toast('Adicionado à adega')}
   save();refreshAll();
 }
 function shareW(){openShare()}
@@ -1500,7 +1727,7 @@ function openShare(){
   const w=W(currentId);if(!w)return;
   byId('scRegion').textContent='◉ '+w.region;
   const sb=byId('scBottleBox');
-  if(w.img){sb.classList.add('bottle-photo');sb.style.setProperty('--bottle-bg',w.color);byId('scImg').src=w.img;byId('scImg').style.display='';}
+  if(w.img){const img=byId('scImg');sb.classList.add('bottle-photo');sb.style.setProperty('--bottle-bg',w.color);img.dataset.wid=w.id;img.onerror=()=>swapBottleImage(img);img.src=w.img;img.style.display='';}
   else{sb.classList.remove('bottle-photo');sb.style.background=w.color;byId('scImg').style.display='none';}
   byId('scName').textContent=w.name;
   byId('scMeta').textContent=w.dist;
@@ -1532,8 +1759,9 @@ function setupHScroll(){
   window.addEventListener('resize',()=>{updateArrows(byId('dDrinks'));updateArrows(byId('colScroll'))});
 }
 function toggleWish(){
+  haptic(12);
   if(wishlist[currentId]){delete wishlist[currentId];byId('wishBtn').textContent='♡';byId('wishBtn').classList.remove('on');toast('Removido dos desejos')}
-  else{wishlist[currentId]=true;byId('wishBtn').textContent='♥';byId('wishBtn').classList.add('on');toast('Salvo em "quero provar" ♥')}
+  else{wishlist[currentId]=true;byId('wishBtn').textContent='♥';byId('wishBtn').classList.add('on');toast('Salvo em "quero provar"')}
   saveWish();renderCellar();
 }
 
@@ -1545,10 +1773,10 @@ function renderCellar(){
   if(!ids.length){
     if(cellarView==='proved'){
       sub.textContent='Ainda vazia — bora encher?';
-      el.innerHTML=`<div class="empty"><div class="em">🗄️</div><h3>Sua adega está vazia</h3><p>Escaneie ou explore whiskies e salve seus favoritos aqui.</p><button onclick="go('discover',document.querySelector('[data-tab=discover]'))">Explorar whiskies</button></div>`;
+      el.innerHTML=`<div class="empty"><div class="em"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3h4v2.6l1.2 2.3a3 3 0 0 1 .3 1.4V19a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2V9.3a3 3 0 0 1 .3-1.4L10 5.6z"/><line x1="8.6" y1="12.5" x2="15.4" y2="12.5"/></svg></div><h3>Sua adega está vazia</h3><p>Escaneie ou explore whiskies e salve seus favoritos aqui.</p><button onclick="go('discover',document.querySelector('[data-tab=discover]'))">Explorar whiskies</button></div>`;
     }else{
       sub.textContent='Sua lista de desejos';
-      el.innerHTML=`<div class="empty"><div class="em">♡</div><h3>Nada na lista ainda</h3><p>Toque no coração de um whisky pra guardar pra provar depois.</p><button onclick="go('discover',document.querySelector('[data-tab=discover]'))">Explorar whiskies</button></div>`;
+      el.innerHTML=`<div class="empty"><div class="em"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg></div><h3>Nada na lista ainda</h3><p>Toque no coração de um whisky pra guardar pra provar depois.</p><button onclick="go('discover',document.querySelector('[data-tab=discover]'))">Explorar whiskies</button></div>`;
     }
     return;
   }
@@ -1598,19 +1826,64 @@ function renderProfile(){
 
 /* ---------------- SCAN ---------------- */
 let scanning=false;
+let scanMode='bottle';
+const SCAN_TIPS={
+  bottle:[
+    '💡 Enquadre o <b>rótulo</b> inteiro — nome e destilaria ajudam no reconhecimento.',
+    '💡 Sem a garrafa? Tire foto do rótulo salvo na galeria depois.',
+    '💡 Rótulo amassado ou reflexo atrapalham — tente uma luz mais suave.'
+  ],
+  menu:[
+    '💡 No <b>cardápio do bar</b>, aponte pra lista de doses — leio vários de uma vez.',
+    '💡 Achou um menu longo? Aproxime de cada seção pra não perder nenhum.',
+    '💡 Comparo os preços do cardápio com a média da comunidade.'
+  ]
+};
+let tipIv=null,tipIdx=0;
+function haptic(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
+function setScanMode(m,btn){
+  scanMode=m;haptic(8);
+  document.querySelectorAll('#scanSeg button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+  byId('vfFeed').classList.toggle('menu', m==='menu');
+  byId('vfMode').textContent = m==='menu'?'📋 CARDÁPIO':'🍾 GARRAFA';
+  byId('scanHint').textContent = m==='menu'?'Aponte pro cardápio de doses do bar':'Aponte pra garrafa de whisky';
+  byId('scanStatus').textContent='Toque no botão pra escanear';
+  cycleTip(true);
+}
+function cycleTip(reset){
+  const el=byId('scanTip');if(!el)return;
+  clearInterval(tipIv);
+  if(reset)tipIdx=0;
+  const list=SCAN_TIPS[scanMode];
+  const paint=()=>{el.classList.remove('show');
+    setTimeout(()=>{el.innerHTML=list[tipIdx%list.length];el.classList.add('show')},180)};
+  paint();
+  tipIv=setInterval(()=>{tipIdx++;paint()},4200);
+}
+function stopTip(){clearInterval(tipIv);const el=byId('scanTip');el&&el.classList.remove('show')}
 function doScan(){
-  if(scanning)return;scanning=true;
+  if(scanning)return;scanning=true;haptic(14);
   const vf=byId('vf'),st=byId('scanStatus');
-  vf.classList.add('scanning');
-  const steps=['Procurando rótulo...','Lendo o rótulo...','Comparando no catálogo...','Quase lá...'];
+  stopTip();vf.classList.add('scanning');byId('scanBtn').classList.add('busy');
+  const steps = scanMode==='menu'
+    ? ['Lendo o cardápio...','Achando as doses...','Cruzando com o catálogo...','Quase lá...']
+    : ['Procurando rótulo...','Lendo o rótulo...','Comparando no catálogo...','Quase lá...'];
   let i=0;st.textContent=steps[0];
   const iv=setInterval(()=>{i++;if(i<steps.length)st.textContent=steps[i]},450);
   setTimeout(()=>{
-    clearInterval(iv);vf.classList.remove('scanning');scanning=false;
-    const w=WHISKIES[Math.floor(Math.random()*WHISKIES.length)];
-    st.textContent='✓ '+w.name+' reconhecido!';
-    toast('🥃 '+w.name+' reconhecido em 1,2s');
-    setTimeout(()=>openDetail(w.id),400);
+    clearInterval(iv);vf.classList.remove('scanning');byId('scanBtn').classList.remove('busy');scanning=false;haptic([12,40,12]);
+    if(scanMode==='menu'){
+      const pool=[...WHISKIES].sort(()=>Math.random()-.5).slice(0,3).sort((a,b)=>b.score-a.score);
+      const best=pool[0];
+      st.textContent='✓ '+pool.length+' doses encontradas!';
+      toast('📋 '+pool.length+' whiskies no cardápio — melhor nota: '+best.name);
+      setTimeout(()=>openDetail(best.id),450);
+    }else{
+      const w=WHISKIES[Math.floor(Math.random()*WHISKIES.length)];
+      st.textContent='✓ '+w.name+' reconhecido!';
+      toast('🥃 '+w.name+' reconhecido em 1,2s');
+      setTimeout(()=>openDetail(w.id),400);
+    }
   },2000);
 }
 
@@ -1623,7 +1896,9 @@ function go(tab,btn){
   if(tab==='cellar')renderCellar();
   if(tab==='ranking')renderRanking();
   if(tab==='profile')renderProfile();
-  byId('scanStatus') && (tab==='scan') && (byId('scanStatus').textContent='Toque no botão pra escanear');
+  if(tab==='discover')updateGreeting();
+  if(tab==='scan'){byId('scanStatus').textContent='Toque no botão pra escanear';cycleTip(true)}
+  else stopTip();
 }
 function refreshAll(){renderList();renderCellar();renderProfile()}
 
@@ -1656,10 +1931,107 @@ function applyUser(){
   byId('topAv').textContent=initial;
   document.querySelector('.prof-av').textContent=initial;
   document.querySelector('.prof-head h2').textContent=user?.name||'Você';
+  updateGreeting();renderMatch();
+}
+function updateGreeting(){
+  const h=new Date().getHours();
+  const p = h<12?['Bom dia','☀️'] : h<18?['Boa tarde','🌤️'] : ['Boa noite','🌙'];
+  const nm=(user?.name||'').trim().split(' ')[0];
+  byId('greetTime').textContent = (nm?`${p[0]}, ${nm} `:`${p[0]} `)+p[1];
+  const lines = h<12
+    ? ['Um dram pra começar bem?','O que vamos descobrir hoje?','Que tal um malte leve agora?']
+    : h<18
+    ? ['Bora achar seu próximo favorito?','O que vamos provar hoje?','Um destaque pro fim de tarde?']
+    : ['Hora do dram da noite 🥃','O que vamos provar hoje?','Que tal algo defumado agora?'];
+  byId('greetLine').textContent = lines[Math.floor(Math.random()*lines.length)];
+}
+
+/* ---------------- PERSONALIZAÇÃO (Pra você) ---------------- */
+function tasteMatch(w){
+  const t=(user&&user.tastes)||[];
+  if(!t.length||!w.fl)return null;
+  const vals=t.map(k=>w.fl[k]||0);
+  return Math.round(vals.reduce((a,b)=>a+b,0)/vals.length);
+}
+function matchLabel(m){return m>=75?'Combina demais com seu paladar':m>=55?'Boa chance de você curtir':m>=35?'Talvez surpreenda':'Fora do seu estilo usual'}
+function cardMatchHTML(w,m){
+  return `<div class="w-card" onclick="openDetail('${w.id}')">
+    ${bottleHTML(w)}
+    <div class="w-info">
+      <h4>${w.name}</h4>
+      <div class="m">${w.dist}</div>
+      <span class="match-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 9.2 8.6 2 9.2l5.4 4.7L5.8 21 12 17.3 18.2 21l-1.6-7.1L22 9.2l-7.2-.6z"/></svg>${m}% combina</span>
+    </div>
+    <div class="w-score">
+      <div class="n">${w.score.toFixed(1)}</div>
+      <div class="st">${stars(w.score)}</div>
+    </div>
+  </div>`;
+}
+function renderMatch(){
+  const el=byId('forYouMatch');if(!el)return;
+  const t=(user&&user.tastes)||[];
+  if(!t.length){el.innerHTML='';return}
+  const ranked=WHISKIES.map(w=>({w,m:tasteMatch(w)})).filter(x=>x.m!=null).sort((a,b)=>b.m-a.m).slice(0,5);
+  const nice=t.map(x=>({Defumado:'defumado',Doce:'doce',Frutado:'frutado',Especiaria:'apimentado',Madeira:'amadeirado',Salgado:'marítimo'}[x]||x.toLowerCase()));
+  const list=nice.length>1?nice.slice(0,-1).join(', ')+' e '+nice.slice(-1):nice[0];
+  el.innerHTML=`<div class="section-t">Feito pro seu paladar</div>
+    <div class="section-s">Com base em quem curte ${list}</div>
+    ${ranked.map(({w,m})=>cardMatchHTML(w,m)).join('')}`;
+}
+
+/* ---------------- COMENTÁRIOS ---------------- */
+const COMMENTS={
+  lagavulin16:[
+    {u:'Diego P.',c:'linear-gradient(135deg,#9a4e17,#e0a94f)',t:'A fumaça no início assusta, mas depois você não vive sem. Clássico absoluto.',tm:'há 2 h',likes:6},
+    {u:'Marina C.',c:'linear-gradient(135deg,#5c4d3b,#8a7b64)',t:'Provei num bar em Islay e chorei (de emoção, e um pouco de turfa no olho).',tm:'ontem',likes:11}
+  ],
+  ardbeg10:[
+    {u:'Bruno A.',c:'linear-gradient(135deg,#7a3418,#c98a2e)',t:'Turfa no talo. Pra quem gosta, é perfeição. Pra quem não gosta, foge.',tm:'há 5 h',likes:4}
+  ],
+  yamazaki12:[
+    {u:'Rafael M.',c:'linear-gradient(135deg,#e0a94f,#bf7420)',t:'Elegante demais. Mel, madeira japonesa e um final que não acaba nunca.',tm:'há 1 dia',likes:8}
+  ]
+};
+const CMT_SEED=[
+  {u:'Camila R.',c:'linear-gradient(135deg,#3f5e46,#6c8f74)',t:'Ainda não provei, mas tá na minha lista depois dessas avaliações!',tm:'há 3 h',likes:2},
+  {u:'Thiago L.',c:'linear-gradient(135deg,#9a4e17,#e0a94f)',t:'Melhor custo-benefício pra quem tá começando, na minha opinião.',tm:'há 1 dia',likes:5}
+];
+let cmtExtra=JSON.parse(localStorage.getItem('dram_cmt')||'{}'); // {id:[{...}]}
+let cmtLiked={};let currentCmt=null;
+function cmtsFor(id){return (cmtExtra[id]||[]).concat(COMMENTS[id]||CMT_SEED)}
+function cmtCount(id){return cmtsFor(id).length}
+function openCmt(id){
+  currentCmt=id;const w=W(id);
+  byId('cmtTitle').textContent='Comentários'+(w?' · '+w.name:'');
+  renderCmt();byId('cmtPicker').classList.add('open');
+}
+function closeCmt(){byId('cmtPicker').classList.remove('open')}
+function renderCmt(){
+  const list=cmtsFor(currentCmt);
+  byId('cmtList').innerHTML = list.length?list.map((c,i)=>{
+    const on=cmtLiked[currentCmt+'_'+i];
+    return `<div class="cmt-row">
+      <div class="cmt-av" style="background:${c.c}">${c.u[0]}</div>
+      <div class="cmt-b">
+        <div class="cmt-h"><b>${c.u}</b><span class="tm">${c.tm}</span></div>
+        <p>${c.t}</p>
+        <span class="cmt-like ${on?'on':''}" onclick="likeCmt(${i},this)">${on?'♥':'♡'} ${c.likes+(on?1:0)}</span>
+      </div></div>`;
+  }).join(''):`<div class="cmt-empty">Nenhum comentário ainda.<br>Seja o primeiro 🥃</div>`;
+}
+function likeCmt(i,el){const k=currentCmt+'_'+i;cmtLiked[k]=!cmtLiked[k];haptic(8);renderCmt()}
+function sendCmt(){
+  const inp=byId('cmtInput'),txt=inp.value.trim();if(!txt)return;
+  const nm=(user&&user.name)||'Você';
+  (cmtExtra[currentCmt]=cmtExtra[currentCmt]||[]).unshift({u:nm,c:'linear-gradient(135deg,var(--gold),var(--amber))',t:txt,tm:'agora',likes:0});
+  localStorage.setItem('dram_cmt',JSON.stringify(cmtExtra));
+  inp.value='';haptic(12);renderCmt();
+  if(byId('dCmtCount')&&currentCmt===currentId)byId('dCmtCount').textContent=cmtCount(currentCmt)+' comentário'+(cmtCount(currentCmt)>1?'s':'');
 }
 
 /* ---------------- INIT ---------------- */
-renderChips();renderList();renderCellar();renderProfile();renderTierChips();renderRanking();renderLearn();renderCollections();setupHScroll();
+renderChips();renderList();renderMatch();renderCellar();renderProfile();renderTierChips();renderRanking();renderLearn();renderCollections();setupHScroll();updateGreeting();
 if(user){applyUser();byId('onb').style.display='none'}
 </script>
 </body>
